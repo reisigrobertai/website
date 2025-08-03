@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="title" content="Robert Reisig">
+    <meta name="image" content="/favicon-reisig.jpg"> 
+    <link rel="icon" type="image/svg" href="/favicon-reisig.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>reisig.org</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/65b6bc240ff6374032c5e006/1hl8strpk';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+
+    <script>
+ function gfdx() {
+    const apiUrl = 'https://us-central1-website-412518.cloudfunctions.net/function-6';
+
+    fetch(apiUrl, {
+        method: 'POST', // or 'PUT'
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+        }),
+        mode: 'cors', 
+        credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+window.addEventListener('load', gfdx);
+
+    </script>
+
+    
+    
+    <!-- Define CSS styles for the entire page -->
+    <style>
+
+
+
+::-webkit-scrollbar {
+      display: none; 
+    }
+
+        body, html {
+            scrollbar-width: none;
+            height: 100%;
+            width: 100%;
+            min-width: 360px;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121421;
+            color: #ffffff;
+            overflow: auto;
+        }
+        
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none; /* Initially hide these sections */
+        }
+
+        .impress-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60%;
+            transform: translate(-50%, -50%);
+            text-align: left;
+            display: none; /* Initially hide these sections */
+            overflow: auto;
+        }
+        
+        .content.active, .impress-content.active {
+            display: block;
+            transition: opacity 0.5s ease-in-out;
+            overflow: auto;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+        
+        input[type="text"] {
+            width: 80%;
+            max-width: 600px;
+            padding: 12px;
+            border-radius: 20px;
+            border: 0px solid #000000;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 1.2em;
+        }
+        
+        .send-button {
+            background-color: transparent;
+            color: #ffffff;
+            border: none;
+            padding: 0px 0px;
+            border-radius: 0px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 1.4em; /* Enlarge button text */
+            font-weight: 900;
+        }
+        
+        .suggested-questions {
+            margin-top: 20px;
+            color: #c6c6c6;
+            font-size: 1em;
+        }
+        
+        .loading-animation {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .response-container {
+            display: none;
+            text-align: left;
+            font-size: 1em;
+            font-weight: bold;
+            color: #000000;
+            margin: 50px;
+        }
+        
+        header {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0px;
+            left: 0px;
+            width: 100%;
+            margin: 10px;
+        }
+        
+        .small-text {
+            color: #909090;
+            font-size: 0.8em;
+            text-align: center;
+            margin-right: 110px;
+            margin-left: 10px;
+        }
+
+        .impress-button, .back-button {
+            background-color: transparent;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 20px;
+        }
+
+        .impress-button {
+            display: block;
+            position: absolute;
+            font-size: 1em;
+            right: 10px;
+            top: 10px;
+        }
+        
+        .back-button {
+            display: none;
+            position: absolute;
+            font-size: 1.5em;
+            left: 10px;
+            top 10px;
+
+        }
+
+        button:hover {
+            transform: scale(1.2);
+            transition: transform 0.3s ease;
+        }
+
+        .popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(2px);
+    z-index: 1;
+}
+
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    width: 80%;
+    height: 80%;
+    border-top-left-radius: 50px;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    border: solid;
+    border-color: #000000;
+    border-width: 5px;
+    overflow: auto;
+}
+
+.loading span {
+    opacity: 0;
+    animation: fadeInOutDot 1s infinite;
+}
+
+.loading span:nth-child(1) {
+    animation-delay: 0.125s;
+}
+
+.loading span:nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.loading span:nth-child(3) {
+    animation-delay: 0.375s;
+}
+
+@keyframes fadeInOutDot {
+    0%, 75% { opacity: 0; }
+    25%, 50% { opacity: 1; }
+}
+
+.inline-paragraph {
+  display: inline; 
+  margin: 0; 
+}
+
+.privacy-link {
+    color: #ffffff; 
+    text-decoration: none; 
+}
+
+
+.privacy-link:hover {
+    text-decoration: underline; 
+    color: #ffffff; 
+}
+
+
+
+    </style>
+</head>
+<body>
+    <header>
+        <button id="back-button" class="back-button">&lt</button>
+        <button id="impress-button" class="impress-button">Imprint &<br>Privacy Policy</button>
+
+    </header>
+    
+    <div class="content active">
+        <h1>Ask me a question ... (AI will answer within 5 seconds)</h1>
+        <input type="text" id="user-input" placeholder="Type here ...">
+        <button id="send-button" class="send-button">➤</button>
+        <div class="suggested-questions">
+            <p class="inline-paragraph">What degree do you have?</p>
+            <p class="inline-paragraph"> | </p>
+            <p class="inline-paragraph">Do you have experience abroad?</p>
+            <p class="inline-paragraph"> | </p>
+            <p class="inline-paragraph">What's the most unusual hobby or skill you possess?</p>
+        </div>
+        <div class="loading-animation" id="loading-animation">
+            <div class="loading">
+                Loading
+                <span>.</span><span>.</span><span>.</span>
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="impress-content">
+        <h2>Imprint</h2>
+        <p><b>Information according to § 5 TMG</b><br>
+            Robert Reisig<br>
+            c/o Block Services<br>
+            Stuttgarter Str. 106<br>
+            70736 Fellbach<br>
+            Germany<br><br>            
+            <b>Contact</b><br>
+            Email: contact@reisig.org<br>
+            Phone: +49 6221 4164753<br><br>          
+            <b>Responsible for content according to § 55 Abs. 2 RStV</b><br>
+            Robert Reisig<br>
+            c/o Block Services<br>
+            Stuttgarter Str. 106<br>
+            70736 Fellbach<br>
+            Germany<br></p>
+         <p><b>Privacy Policy</b><br>
+        <a class="privacy-link" href="reisig-privacy-policy.pdf" target="_blank">Open</a>
+
+
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+                 <div class="response-container" id="response-container"></div>
+       </div>
+    </div>
+
+    <footer>
+
+        <p class="small-text" id="small-text">Robert Reisig 2025 - The information is generated by artificial intelligence and may not be guaranteed for accuracy. For further inquiries or clarifications, please do not hesitate to contact me.</p>
+
+    </footer>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+    const userInput = document.getElementById("user-input");
+    const smallText = document.getElementById("small-text");
+    const sendButton = document.getElementById("send-button");
+    const loadingAnimation = document.getElementById("loading-animation");
+    const responseContainer = document.getElementById("response-container");
+    const impressButton = document.getElementById("impress-button");
+    const backButton = document.getElementById("back-button");
+    const content = document.querySelector(".content");
+    const suggestedQuestions = document.querySelector(".suggested-questions");
+    const impressContent = document.querySelector(".impress-content");
+    const title = document.querySelector("h1");
+    const popup = document.getElementById("popup");
+    const overlay = document.querySelector(".popup");
+
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+            popup.style.display = "none";
+        }
+    });
+
+    sendButton.addEventListener("click", processQuery);
+    userInput.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            processQuery();
+        }
+    });
+
+    impressButton.addEventListener("click", function() {
+        content.classList.remove("active");
+        impressContent.classList.add("active");
+        impressButton.style.display = "none";
+        smallText.style.display = "none";
+        backButton.style.display = "block";
+    });
+
+    backButton.addEventListener("click", function() {
+        impressContent.classList.remove("active");
+        content.classList.add("active");
+        impressButton.style.display = "block";
+        backButton.style.display = "none";
+        smallText.style.display = "block";
+    });
+
+    async function processQuery() {
+        const userMessage = userInput.value.trim();
+        if (userMessage !== "") {
+            responseContainer.style.display = "none";
+            loadingAnimation.style.display = "block";
+            suggestedQuestions.style.display = "none";
+
+            try {
+                const response = await axios.post('https://us-central1-website-412518.cloudfunctions.net/function-1', { message: userMessage });
+                const responseData = response.data;
+                if (responseData && responseData.message) {
+                    popup.style.display = "block";
+                    const aiResponse = responseData.message;
+                    responseContainer.innerHTML = "<p>" + removeDoubleQuotes(aiResponse) + "</p>";
+                    responseContainer.style.display = "block";
+                } else {
+                    popup.style.display = "block";
+                    responseContainer.innerHTML = "<p>No valid AI response received.</p>";
+                    responseContainer.style.display = "block";
+                }
+            } catch (error) {
+                popup.style.display = "block";
+                responseContainer.innerHTML = "<p>Error: " + error.message + "</p>";
+                responseContainer.style.display = "block";
+            } finally {
+                loadingAnimation.style.display = "none";
+                suggestedQuestions.style.display = "block";
+            }
+        }
+    }
+});
+
+function removeDoubleQuotes(inputString) {
+    return inputString.replaceAll('"', '');
+}
+
+    </script>
+</body>
+</html>
