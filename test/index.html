@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robert Reisig - Medical & Data Innovation</title>
+
+    <meta name="title" content="Robert Reisig">
+    <meta name="image" content="/favicon-reisig.jpg"> 
+    <link rel="icon" type="image/svg" href="/favicon-reisig.svg">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script type="text/javascript">
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src='https://embed.tawk.to/65b6bc240ff6374032c5e006/1hl8strpk';
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0A0C10;
+            --bg-secondary: #101419;
+            --text-primary: #F0F0F0;
+            --text-secondary: #a0a0a0;
+            --accent-blue: #00BFFF;
+            --accent-bright: #E0FFFF;
+            --subtle-elements: #333333;
+            --font-serif: 'Lora', serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { font-size: 16px; }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            overflow: hidden;
+        }
+
+        /* --- GLOBAL SCROLLBAR HIDING --- */
+        body::-webkit-scrollbar, .page-wrapper::-webkit-scrollbar, .modal-content::-webkit-scrollbar {
+            display: none;
+        }
+        body, .page-wrapper, .modal-content {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        #animation-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .canvas-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #stars-canvas { opacity: 0.7; }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            animation: fadeIn 1s ease-out;
+            flex-shrink: 0;
+        }
+        
+        .nav-button {
+            background: transparent;
+            border: 1px solid rgba(240, 240, 240, 0.5);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            padding: clamp(0.6rem, 1.5vw, 0.85rem) clamp(1.2rem, 3vw, 1.75rem);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-button:hover {
+            color: var(--accent-blue);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-left: clamp(1rem, 4vw, 2rem);
+            padding-right: clamp(1rem, 4vw, 2rem);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .content-box {
+            max-width: 900px;
+            width: 100%;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(1.8rem, 5.5vw, 4rem);
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            height: clamp(120px, 20vh, 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1.5s ease-in-out;
+            opacity: 0;
+            margin-bottom: clamp(2rem, 5vh, 3rem);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .input-area {
+            position: relative;
+            margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+        }
+
+        #user-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--subtle-elements);
+            color: var(--text-primary);
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            padding: clamp(0.8rem, 2vh, 1.2rem) 0;
+            outline: none;
+            transition: border-color 0.3s ease;
+            text-align: center;
+            font-family: var(--font-sans);
+            font-weight: 300;
+        }
+
+        #user-input::placeholder { color: var(--text-secondary); font-weight: 300; }
+        #user-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 5px 15px -10px rgba(0, 191, 255, 0.3);
+        }
+
+        .loading-indicator { 
+            display: none; 
+            margin-top: clamp(1.5rem, 4vh, 2.5rem); 
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem); 
+            color: var(--text-secondary); 
+            letter-spacing: 0.2em; 
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 12, 16, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 100; display: none; align-items: center; justify-content: center;
+            padding: clamp(1rem, 5vh, 2rem);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .modal-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: clamp(300px, 90vw, 900px);
+            max-height: 90vh;
+            padding: 2px;
+        }
+        
+        .modal-border-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 101;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            height: 100%;
+            max-height: 85vh;
+            border-radius: 8px; 
+            padding: clamp(2rem, 5vw, 3.5rem);
+            overflow-y: auto; 
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: modalEnter 0.4s ease-out;
+            color: var(--text-primary);
+            z-index: 102;
+        }
+
+        .modal-content h2 {
+            font-family: var(--font-serif); 
+            font-weight: 500; 
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            margin-bottom: 1.5rem; 
+            border-bottom: 1px solid var(--subtle-elements);
+            padding-bottom: 1rem;
+        }
+
+        .modal-content p, .modal-content a {
+            line-height: 1.8; 
+            color: var(--text-primary); 
+            margin-bottom: 1.2rem;
+            font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+        }
+        .modal-content a { color: var(--accent-blue); text-decoration: none; }
+
+        .response-text { 
+            line-height: 1.9; 
+            font-size: clamp(1rem, 2.8vw, 1.2rem); 
+            font-weight: 300; 
+        }
+
+        .close-button {
+            position: absolute; 
+            top: clamp(0.8rem, 2vw, 1.2rem); 
+            right: clamp(0.8rem, 2vw, 1.2rem); 
+            background: none; border: none;
+            color: var(--text-secondary); 
+            font-size: clamp(1.2rem, 3vw, 1.6rem); 
+            cursor: pointer;
+            transition: color 0.3s, transform 0.3s;
+            z-index: 103;
+        }
+        .close-button:hover { color: var(--text-primary); transform: rotate(90deg); }
+
+        #emg-container {
+            width: 100%;
+            height: clamp(60px, 12vh, 100px);
+            flex-shrink: 0;
+            position: relative;
+            opacity: 0.6;
+        }
+        
+        footer {
+            width: 100%;
+            padding: clamp(1rem, 3vh, 1.5rem);
+            text-align: center;
+            font-size: clamp(0.7rem, 2vw, 0.85rem);
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            line-height: 1.4;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes modalEnter { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Additional mobile optimizations */
+        @media (max-width: 480px) {
+            h1 {
+                height: 100px;
+                margin-bottom: 1.5rem;
+            }
+            .modal-content {
+                padding: 1.5rem;
+            }
+            #emg-container {
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="animation-container">
+        <canvas id="globe-canvas" class="canvas-layer"></canvas>
+        <canvas id="stars-canvas" class="canvas-layer"></canvas>
+    </div>
+
+    <div class="page-wrapper">
+        <header>
+            <button id="impress-button" class="nav-button">Imprint & Privacy</button>
+        </header>
+
+        <main id="main-content">
+            <div class="content-box">
+                <h1 id="headline"></h1>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Ask a question..." autocomplete="off">
+                </div>
+                <div class="loading-indicator" id="loading-indicator">ANALYZING...</div>
+            </div>
+        </main>
+        
+        <div id="emg-container">
+             <canvas id="emg-canvas" class="canvas-layer"></canvas>
+        </div>
+
+        <footer id="footer">
+            <p>Robert Reisig © 2025. AI-generated responses are for informational purposes. For guaranteed accuracy, please contact me directly.</p>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="imprint-modal">
+        <div class="modal-wrapper">
+            <canvas id="imprint-border-canvas" class="modal-border-canvas"></canvas>
+            <div class="modal-content">
+                <button class="close-button" onclick="closeImprintModal()">×</button>
+                <h2>Imprint</h2>
+                <p><b>Information according to § 5 TMG</b><br>
+                    Robert Reisig<br>
+                    c/o Block Services<br>
+                    Stuttgarter Str. 106<br>
+                    70736 Fellbach<br>
+                    Germany<br><br>            
+                    <b>Contact</b><br>
+                    Email: contact@reisig.org<br>
+                    Phone: +49 6221 4164753<br><br>          
+                    <b>Responsible for content according to § 55 Abs. 2 RStV</b><br>
+                    Robert Reisig<br>
+                    c/o Block Services<br>
+                    Stuttgarter Str. 106<br>
+                    70736 Fellbach<br>
+                    Germany<br></p>
+                 <p><b>Privacy Policy</b><br>
+                <a href="reisig-privacy-policy.pdf" target="_blank">Open Privacy Policy Document</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="response-modal">
+        <div class="modal-wrapper">
+            <canvas id="response-border-canvas" class="modal-border-canvas"></canvas>
+            <div class="modal-content">
+                <button class="close-button" onclick="closeModal()">×</button>
+                <div class="response-text" id="response-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            fetch('https://api.reisig.org/t', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ s: 'reisig.org' }), mode: 'cors' }).catch(() => {});
+        });
+        const userInput = document.getElementById('user-input'), loadingIndicator = document.getElementById('loading-indicator'), responseModal = document.getElementById('response-modal'), responseText = document.getElementById('response-text'), mainContent = document.getElementById('main-content'), impressButton = document.getElementById('impress-button'), imprintModal = document.getElementById('imprint-modal');
+        
+        let responseBorderAnimator = null;
+        let imprintBorderAnimator = null;
+
+        function closeModal() {
+            responseModal.style.display = 'none';
+            if (responseBorderAnimator) responseBorderAnimator.stop();
+        }
+        function closeImprintModal() {
+            imprintModal.style.display = 'none';
+            if (imprintBorderAnimator) imprintBorderAnimator.stop();
+        }
+        
+        userInput.addEventListener('keydown', e => { if (e.key === 'Enter') processQuery(); });
+        responseModal.addEventListener('click', e => { if (e.target === responseModal) closeModal(); });
+        imprintModal.addEventListener('click', e => { if (e.target === imprintModal) closeImprintModal(); });
+        
+        impressButton.addEventListener('click', () => {
+            imprintModal.style.display = 'flex';
+            if (!imprintBorderAnimator) {
+                imprintBorderAnimator = createBorderAnimator('imprint-border-canvas');
+            }
+            imprintBorderAnimator.start();
+        });
+        
+        async function processQuery() {
+            const message = userInput.value.trim(); if (!message) return;
+            loadingIndicator.style.display = 'block';
+            try {
+                const response = await fetch('https://api.reisig.org/q', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ m: message, s: 'reisig.org' }), mode: 'cors' });
+                const data = await response.json();
+                if (data && data.r) {
+                    responseText.innerHTML = `<p>${data.r.replace(/\n/g, '<br><br>')}</p>`;
+                    responseModal.style.display = 'flex';
+                    if (!responseBorderAnimator) {
+                        responseBorderAnimator = createBorderAnimator('response-border-canvas');
+                    }
+                    responseBorderAnimator.start();
+                } else { throw new Error('Invalid AI response.'); }
+            } catch (error) {
+                responseText.innerHTML = '<p>An error occurred. Please try again.</p>';
+                responseModal.style.display = 'flex';
+                if (!responseBorderAnimator) {
+                    responseBorderAnimator = createBorderAnimator('response-border-canvas');
+                }
+                responseBorderAnimator.start();
+            } finally {
+                loadingIndicator.style.display = 'none';
+                userInput.value = '';
+            }
+        }
+
+        const headlineElement = document.getElementById('headline');
+        const headlines = [
+    "Medicine",
+    "Data Analysis",
+    "Innovation",
+    "Movement Analysis",
+    "EMG Research",
+    "Global Perspective",
+    "Gait Analysis",
+    "Medical Technology",
+    "Biomechanics",
+    "Clinical Research",
+    "International",
+    "Cerebral Palsy Research",
+    "Precision",
+    "Research",
+    "Motion Lab",
+    "Clinical Data",
+    "Digital Medicine",
+    "AI Ethics",
+    "Patient Care",
+    "Evidence",
+    "Methodology",
+    "Data Science",
+    "Healthcare Innovation",
+    "Diagnostic Precision",
+    "Research Ethics",
+    "Medical Research",
+    "Data Integrity",
+    "Clinical Analytics",
+    "Healthcare Technology",
+    "Research Methodology",
+    "Clinical Innovation"
+];
+        let currentHeadlineIndex = 0;
+        function cycleHeadlines() {
+            headlineElement.style.opacity = 0;
+            setTimeout(() => {
+                let nextIndex;
+                do {
+                    nextIndex = Math.floor(Math.random() * headlines.length);
+                } while (nextIndex === currentHeadlineIndex);
+                currentHeadlineIndex = nextIndex;
+                headlineElement.innerHTML = headlines[currentHeadlineIndex];
+                headlineElement.style.opacity = 1;
+            }, 1500);
+        }
+        currentHeadlineIndex = Math.floor(Math.random() * headlines.length);
+        headlineElement.innerHTML = headlines[currentHeadlineIndex];
+        headlineElement.style.opacity = 1;
+        setInterval(cycleHeadlines, 24000);
+
+        const globeCanvas = document.getElementById('globe-canvas');
+        if (globeCanvas) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            const geometry = new THREE.SphereGeometry(1.5, 32, 32);
+            const material = new THREE.PointsMaterial({ color: 0x333333, size: 0.015 });
+            const globe = new THREE.Points(geometry, material);
+            scene.add(globe);
+            camera.position.z = 3;
+            function animateGlobe() { requestAnimationFrame(animateGlobe); globe.rotation.y += 0.0003; renderer.render(scene, camera); }
+            animateGlobe();
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        }
+
+        const starsCanvas = document.getElementById('stars-canvas');
+        if (starsCanvas) {
+            const ctx = starsCanvas.getContext('2d');
+            let stars = [];
+            const numStars = 800;
+            
+            function setupStars() {
+                starsCanvas.width = window.innerWidth;
+                starsCanvas.height = window.innerHeight;
+                stars = [];
+                for (let i = 0; i < numStars; i++) {
+                    stars.push({
+                        x: Math.random() * starsCanvas.width,
+                        y: Math.random() * starsCanvas.height,
+                        brightness: 0.8 + Math.random() * 0.2
+                    });
+                }
+            }
+
+            function drawStars() {
+                ctx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+                for (const star of stars) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                    ctx.fillRect(star.x, star.y, 1, 1);
+                }
+            }
+            setupStars();
+            drawStars();
+            
+            window.addEventListener('resize', () => {
+                setupStars();
+                drawStars();
+            });
+        }
+
+        const emgCanvas = document.getElementById('emg-canvas');
+        if (emgCanvas) {
+            const ctx = emgCanvas.getContext('2d');
+            let w, h, points, animationId;
+            const pointSpacing = 4;
+            let isBursting = false, burstProgress = 0, burstDuration = 0, burstAmplitude = 0;
+            let frameCounter = 0;
+
+            function generateBaselineNoise(y) { return y + (Math.random() - 0.5) * 5; }
+            
+            function setupEMG() {
+                const container = document.getElementById('emg-container');
+                w = emgCanvas.width = container.offsetWidth;
+                h = emgCanvas.height = container.offsetHeight;
+                const baselineY = h * 0.5;
+                const numPoints = Math.ceil(w / pointSpacing);
+                points = [];
+                for (let i = 0; i < numPoints; i++) {
+                    points.push(generateBaselineNoise(baselineY));
+                }
+            }
+            setupEMG();
+
+            function drawEMG() {
+                animationId = requestAnimationFrame(drawEMG);
+                frameCounter++;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.strokeStyle = 'deepskyblue';
+                ctx.lineWidth = 1;
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = 'rgba(0, 191, 255, 0.4)';
+                
+                ctx.beginPath();
+                ctx.moveTo(0, points[0]);
+                for (let i = 1; i < points.length; i++) { 
+                    ctx.lineTo(i * pointSpacing, points[i]); 
+                }
+                ctx.stroke();
+
+                if (frameCounter % 2 === 0) {
+                    const baselineY = h * 0.5;
+                    let nextPoint;
+
+                    if (isBursting) {
+                        const envelope = Math.sin((burstProgress / burstDuration) * Math.PI);
+                        nextPoint = baselineY + (Math.random() - 0.5) * burstAmplitude * envelope;
+                        burstProgress++;
+                        if (burstProgress >= burstDuration) { isBursting = false; }
+                    } else {
+                        nextPoint = generateBaselineNoise(baselineY);
+                        if (Math.random() > 0.99) { 
+                            isBursting = true;
+                            burstProgress = 0;
+                            burstDuration = 15 + Math.random() * 25;
+                            burstAmplitude = 35 + Math.random() * 35;
+                        }
+                    }
+                    
+                    points.shift();
+                    points.push(nextPoint);
+                }
+            }
+            drawEMG();
+            
+            window.addEventListener('resize', () => {
+                cancelAnimationFrame(animationId);
+                setupEMG();
+                drawEMG();
+            });
+        }
+        
+        function createBorderAnimator(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            let animationId;
+
+            function resize() {
+                const wrapper = canvas.parentElement;
+                if (wrapper) {
+                    canvas.width = wrapper.offsetWidth;
+                    canvas.height = wrapper.offsetHeight;
+                }
+            }
+
+            function getPosition(progress, w, h) {
+                const perimeter = (w + h) * 2;
+                let p = progress * perimeter;
+                if (p < w) return { x: p, y: 0 };
+                p -= w;
+                if (p < h) return { x: w, y: p };
+                p -= h;
+                if (p < w) return { x: w - p, y: h };
+                p -= w;
+                return { x: 0, y: h - p };
+            }
+
+            function animate() {
+                animationId = requestAnimationFrame(animate);
+                const w = canvas.width;
+                const h = canvas.height;
+                if (w === 0 || h === 0) return;
+                ctx.clearRect(0, 0, w, h);
+
+                ctx.strokeStyle = '#00BFFF';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(1, 1, w - 2, h - 2);
+
+                const progress = (Date.now() % 20000) / 20000;
+                
+                const tailLength = 0.12;
+                const tailPoints = 50;
+                
+                ctx.beginPath();
+                
+                const tailPositions = [];
+                for (let i = 0; i < tailPoints; i++) {
+                    const tailProgress = (progress - (i * tailLength / tailPoints) + 1) % 1;
+                    const pos = getPosition(tailProgress, w, h);
+                    tailPositions.push(pos);
+                }
+                
+                for (let i = 0; i < tailPositions.length - 1; i++) {
+                    const brightness = (1 - i / tailPoints) * 0.9;
+                    const lineWidth = (1 - i / tailPoints) * 6;
+                    
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${brightness})`;
+                    ctx.lineWidth = lineWidth;
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                    ctx.shadowBlur = lineWidth * 2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(tailPositions[i].x, tailPositions[i].y);
+                    ctx.lineTo(tailPositions[i + 1].x, tailPositions[i + 1].y);
+                    ctx.stroke();
+                }
+                
+                const headPos = getPosition(progress, w, h);
+                
+                const outerGradient = ctx.createRadialGradient(headPos.x, headPos.y, 0, headPos.x, headPos.y, 15);
+                outerGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                outerGradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
+                outerGradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.3)');
+                outerGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                ctx.fillStyle = outerGradient;
+                ctx.shadowColor = '#FFFFFF';
+                ctx.shadowBlur = 20;
+                
+                ctx.beginPath();
+                ctx.arc(headPos.x, headPos.y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(headPos.x, headPos.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+            }
+
+            return {
+                start: () => {
+                    resize();
+                    window.addEventListener('resize', resize);
+                    if (!animationId) animate();
+                },
+                stop: () => {
+                    window.removeEventListener('resize', resize);
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            };
+        }
+    </script>
+</body>
+</html>
