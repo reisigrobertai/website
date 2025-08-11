@@ -1,0 +1,38 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with darker color matching website -->
+  <rect width="200" height="200" fill="#0A0C10" rx="20"/>
+  
+  <defs>
+    <radialGradient id="backgroundGlow" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#101419;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#0A0C10;stop-opacity:1"/>
+    </radialGradient>
+    
+    <filter id="letterGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="200" height="200" fill="url(#backgroundGlow)" rx="20"/>
+  
+  <g fill="#00BFFF" filter="url(#letterGlow)">
+    <path d="M35 50 L35 160 L51 160 L51 115 L80 115 L80 99 L51 99 L51 66 L85 66 Q97 66 97 78 L97 90 Q97 102 85 102 L75 102 L97 124 L97 160 L113 160 L113 124 L91 102 Q103 96 103 78 L103 66 Q103 50 85 50 Z"/>
+  </g>
+  
+  <g fill="#00BFFF" filter="url(#letterGlow)">
+    <path d="M115 50 L115 160 L131 160 L131 115 L160 115 L160 99 L131 99 L131 66 L165 66 Q177 66 177 78 L177 90 Q177 102 165 102 L155 102 L177 124 L177 160 L193 160 L193 124 L171 102 Q183 96 183 78 L183 66 Q183 50 165 50 Z"/>
+  </g>
+  
+  <g fill="#FFFFFF" opacity="0.8">
+    <circle cx="30" cy="30" r="1"/>
+    <circle cx="170" cy="40" r="1"/>
+    <circle cx="25" cy="170" r="1"/>
+    <circle cx="175" cy="175" r="1"/>
+    <circle cx="180" cy="25" r="0.5"/>
+    <circle cx="35" cy="180" r="0.5"/>
+  </g>
+</svg>
