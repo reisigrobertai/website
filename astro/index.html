@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robert's Astro Map</title>
+    
+    <!-- Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- OrbitControls for mouse interaction -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Astronomy Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine/astronomy.browser.min.js"></script>
+    
+    <!-- Moment.js for date/time handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            font-family: 'Crimson Text', Georgia, serif;
+            background-color: #000000; 
+            color: #e0f4ff; 
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 100, 200, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(135, 206, 250, 0.03) 0%, transparent 50%);
+        }
+        
+        #canvas-container { 
+            width: 100vw; 
+            height: 100vh; 
+            position: relative; 
+            cursor: grab;
+        }
+        
+        #canvas-container:active { 
+            cursor: grabbing; 
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        
+        /* COMPASS — premium astrological look */
+        #compass-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 170px;
+            height: 170px;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 100;
+        }
+        #compass {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            filter: drop-shadow(0 8px 24px rgba(120, 180, 255, 0.25));
+        }
+        .compass-base {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 50%;
+            background:
+                radial-gradient(120px 120px at 50% 50%, rgba(15, 30, 60, 0.85), rgba(5, 10, 25, 0.9)),
+                conic-gradient(from 0deg, rgba(135,206,250,0.1) 0deg, rgba(135,206,250,0.08) 10deg, transparent 10deg, transparent 20deg) /* subtle ticks */;
+            border: 1px solid rgba(160, 205, 255, 0.25);
+            box-shadow:
+                inset 0 0 25px rgba(135, 206, 250, 0.15),
+                0 0 0 8px rgba(135, 206, 250, 0.06),
+                0 0 40px rgba(135, 206, 250, 0.15);
+            overflow: hidden;
+        }
+        /* Outer halo ring */
+        .compass-base::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 50%;
+            background:
+                conic-gradient(from 0deg, rgba(173, 216, 230, 0.15), rgba(148, 0, 211, 0.12), rgba(70, 130, 180, 0.15), rgba(173, 216, 230, 0.15));
+            mask: radial-gradient(circle at 50% 50%, transparent 62%, black 63%);
+            filter: blur(0.5px);
+        }
+        /* Subtle star sparkle */
+        .compass-base::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(1px 1px at 25% 35%, rgba(200,230,255,0.9), transparent 2px),
+                radial-gradient(1.2px 1.2px at 68% 62%, rgba(200,230,255,0.8), transparent 2.5px),
+                radial-gradient(1px 1px at 42% 78%, rgba(200,230,255,0.65), transparent 2px);
+            opacity: 0.5;
+        }
+        .compass-rotator {
+            position: absolute;
+            inset: 0;
+            /* continuous rotation handled via JS; no transition to avoid easing lag */
+            will-change: transform;
+        }
+        .compass-rose {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            opacity: 0.7;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170' viewBox='0 0 170 170'%3E%3Cg fill='none' stroke='rgba(170,210,255,0.55)' stroke-width='1.4'%3E%3Ccircle cx='85' cy='85' r='70'/%3E%3Cline x1='85' y1='15' x2='85' y2='25'/%3E%3Cline x1='85' y1='145' x2='85' y2='155'/%3E%3Cline x1='15' y1='85' x2='25' y2='85'/%3E%3Cline x1='145' y1='85' x2='155' y2='85'/%3E%3C/ g%3E%3Cg fill='none' stroke='rgba(135,206,250,0.5)' stroke-width='1.5'%3E%3Cpath d='M85 20 L102 65 L85 55 L68 65 Z'/%3E%3Cpath d='M85 150 L102 105 L85 115 L68 105 Z'/%3E%3Cpath d='M20 85 L65 102 L55 85 L65 68 Z'/%3E%3Cpath d='M150 85 L105 102 L115 85 L105 68 Z'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .compass-label {
+            position: absolute;
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #cfeaff;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(160, 210, 255, 0.9), 0 0 20px rgba(135, 206, 250, 0.45);
+            transform: rotate(0deg) !important;
+        }
+        .compass-label.n { top: 14px; left: 50%; transform: translateX(-50%) !important; }
+        .compass-label.s { bottom: 14px; left: 50%; transform: translateX(-50%) !important; }
+        .compass-label.e { top: 50%; right: 14px; transform: translateY(-50%) !important; }
+        .compass-label.w { top: 50%; left: 14px; transform: translateY(-50%) !important; }
+
+        /* Indicator points downward per request */
+        .compass-pointer {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 24px solid #a6d4ff; /* pointing down */
+            filter: drop-shadow(0 0 10px rgba(166, 212, 255, 0.9));
+        }
+        
+        /* Control Panel — premium, soft glow, no scrollbars visible */
+        #control-panel { 
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: radial-gradient(circle at 25% 0%, rgba(12, 28, 56, 0.9) 0%, rgba(5, 12, 28, 0.95) 70%);
+            padding: 0;
+            border-radius: 20px;
+            border: 1px solid rgba(150, 205, 255, 0.25);
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            max-height: calc(100vh - 40px);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 15px 50px rgba(10, 30, 70, 0.45), 
+                0 0 0 1px rgba(150, 205, 255, 0.12), 
+                0 0 80px rgba(135, 206, 250, 0.15);
+            overflow: hidden;
+        }
+        #control-panel.collapsed {
+            width: auto;
+            height: auto;
+            padding: 0;
+            background: transparent;
+            border-color: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+        #control-panel.collapsed .panel-content { display: none; }
+        #control-panel.collapsed .toggle-panel { display: none; }
+        #control-panel.collapsed .panel-header {
+            padding: 15px 20px;
+            background: radial-gradient(circle at 25% 0%, rgba(12, 28, 56, 0.9) 0%, rgba(5, 12, 28, 0.95) 70%);
+            border: 1px solid rgba(150, 205, 255, 0.25);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(10, 30, 70, 0.35);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid rgba(135, 206, 250, 0.2);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .panel-header:hover {
+            background: rgba(135, 206, 250, 0.06);
+        }
+        .panel-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            background: linear-gradient(135deg, #b4e6ff 0%, #a2ccff 50%, #c9b5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 34px rgba(180, 230, 255, 0.45);
+        }
+        .toggle-panel {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(135, 206, 250, 0.15) 0%, rgba(100, 149, 237, 0.15) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(135, 206, 250, 0.22);
+        }
+        .toggle-panel:hover {
+            background: linear-gradient(135deg, rgba(135, 206, 250, 0.32) 0%, rgba(100, 149, 237, 0.32) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 0 20px rgba(135, 206, 250, 0.4);
+        }
+        .toggle-panel::before {
+            content: '−';
+            font-size: 24px;
+            color: rgba(200, 230, 255, 0.95);
+            font-family: 'Playfair Display', serif;
+        }
+        .panel-content {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: calc(100vh - 140px);
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+        .panel-content::-webkit-scrollbar { display: none; } /* WebKit */
+
+        .control-group { 
+            margin-bottom: 22px;
+            animation: fadeInUp 0.6s ease backwards;
+        }
+        .control-group label { 
+            display: block; 
+            margin-bottom: 10px; 
+            font-size: 13px; 
+            color: rgba(195, 225, 255, 0.9);
+            text-transform: uppercase; 
+            letter-spacing: 1.6px;
+            font-weight: 600;
+            font-family: 'Playfair Display', serif;
+            text-shadow: 0 0 10px rgba(135, 206, 250, 0.25);
+        }
+        .control-group input[type="number"] { 
+            width: 100%; 
+            padding: 14px 16px; 
+            background: rgba(6, 16, 36, 0.65);
+            border: 1px solid rgba(135, 206, 250, 0.22);
+            border-radius: 12px; 
+            color: #e0f4ff; 
+            font-size: 15px;
+            font-family: 'Crimson Text', serif;
+            transition: all 0.25s ease;
+        }
+        .control-group input:focus {
+            outline: none;
+            background: rgba(8, 24, 52, 0.85);
+            border-color: rgba(180, 230, 255, 0.7);
+            box-shadow: 0 0 0 3px rgba(135, 206, 250, 0.15), 0 0 30px rgba(135, 206, 250, 0.2);
+        }
+        .control-group input.error {
+            border-color: rgba(255, 120, 120, 0.7);
+            background: rgba(80, 10, 10, 0.25);
+        }
+        .error-message {
+            color: rgba(255, 165, 165, 0.95);
+            font-size: 11px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-message.show { display: block; }
+
+        .datetime-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .datetime-input { position: relative; }
+        .datetime-input select,
+        .datetime-input input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(6, 16, 36, 0.65);
+            border: 1px solid rgba(135, 206, 250, 0.22);
+            border-radius: 12px;
+            color: #e0f4ff;
+            font-size: 14px;
+            font-family: 'Crimson Text', serif;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .datetime-input select:focus,
+        .datetime-input input:focus {
+            outline: none;
+            background: rgba(8, 24, 52, 0.85);
+            border-color: rgba(180, 230, 255, 0.7);
+            box-shadow: 0 0 0 3px rgba(135, 206, 250, 0.15), 0 0 30px rgba(135, 206, 250, 0.2);
+        }
+        .datetime-input select option {
+            background: #03132c;
+            color: #e0f4ff;
+        }
+        .timezone-select { grid-column: span 2; margin-top: 8px; }
+
+        .range-container { position: relative; margin-top: 10px; }
+        .range-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(6, 16, 36, 0.6);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(135, 206, 250, 0.12);
+        }
+        .range-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7ecbff 0%, #bca0ff 100%);
+            border-radius: 3px;
+            transition: width 0.25s ease;
+            box-shadow: 0 0 14px rgba(135, 206, 250, 0.35);
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: transparent;
+            outline: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid #89c8ff;
+            box-shadow: 0 3px 12px rgba(135, 206, 250, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 18px rgba(135, 206, 250, 0.3);
+            transition: all 0.2s ease;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid #89c8ff;
+            box-shadow: 0 3px 12px rgba(135, 206, 250, 0.5);
+        }
+        .range-value { 
+            display: inline-block; 
+            margin-left: 12px; 
+            font-size: 13px; 
+            color: rgba(195, 225, 255, 0.95);
+            font-weight: 600;
+            min-width: 50px;
+            text-align: right;
+            font-family: 'Playfair Display', serif;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background: linear-gradient(135deg, #5a8cc7 0%, #8f6fe8 100%);
+            border: none; 
+            border-radius: 14px; 
+            color: white; 
+            font-weight: 600;
+            font-size: 15px;
+            font-family: 'Playfair Display', serif;
+            cursor: pointer; 
+            transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 22px rgba(138, 43, 226, 0.28), 0 0 40px rgba(70, 130, 180, 0.22);
+        }
+        button::before {
+            content: '';
+            position: absolute;
+            top: -150%;
+            left: -50%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), transparent 40%);
+            transform: rotate(25deg);
+            transition: opacity 0.6s ease;
+            opacity: 0;
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(138, 43, 226, 0.38), 0 0 60px rgba(70, 130, 180, 0.3);
+        }
+        button:hover::before { opacity: 1; }
+        button:active { transform: translateY(-1px); }
+        button:disabled { 
+            background: linear-gradient(135deg, #666 0%, #555 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .toggle-group { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            margin-bottom: 18px;
+            padding: 15px;
+            background: rgba(6, 16, 36, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(135, 206, 250, 0.12);
+        }
+        .toggle-group:hover {
+            background: rgba(10, 24, 52, 0.65);
+            border-color: rgba(135, 206, 250, 0.2);
+        }
+        .toggle-group label {
+            margin: 0;
+            font-size: 14px;
+            color: rgba(200, 230, 255, 0.95);
+            text-transform: none;
+            letter-spacing: 0.5px;
+        }
+        .toggle-switch { 
+            position: relative; 
+            width: 55px; 
+            height: 28px; 
+            background: rgba(6, 16, 36, 0.85);
+            border-radius: 14px; 
+            cursor: pointer; 
+            transition: all 0.25s ease;
+            border: 1px solid rgba(135, 206, 250, 0.22);
+        }
+        .toggle-switch.active { 
+            background: linear-gradient(135deg, #8fd2ff 0%, #bba5ff 100%);
+            border-color: rgba(135, 206, 250, 0.35);
+            box-shadow: 0 0 18px rgba(135, 206, 250, 0.35);
+        }
+        .toggle-switch::after { 
+            content: ''; 
+            position: absolute; 
+            width: 22px; 
+            height: 22px; 
+            background: white; 
+            border-radius: 50%; 
+            top: 2px; 
+            left: 2px; 
+            transition: all 0.25s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+        .toggle-switch.active::after { 
+            transform: translateX(27px);
+            background: #f6fbff;
+            box-shadow: 0 3px 12px rgba(135, 206, 250, 0.55);
+        }
+
+        /* Info Display — refined with subtle glow; small legal links added */
+        #info-display { 
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: radial-gradient(circle at 25% 0%, rgba(12, 28, 56, 0.9) 0%, rgba(5, 12, 28, 0.95) 70%);
+            padding: 18px 22px;
+            border-radius: 16px;
+            font-size: 13px;
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid rgba(150, 205, 255, 0.25);
+            box-shadow: 
+                0 8px 30px rgba(10, 30, 70, 0.35), 
+                0 0 60px rgba(135, 206, 250, 0.18);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+        #info-display.collapsed {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+        #info-display div {
+            margin: 6px 0;
+            color: rgba(200, 230, 255, 0.95);
+            font-family: 'Crimson Text', serif;
+        }
+        .info-hint {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(135, 206, 250, 0.22);
+            font-size: 11px;
+            color: rgba(185, 215, 245, 0.8);
+            line-height: 1.5;
+        }
+        .legal-links {
+            margin-top: 10px;
+            font-size: 10px;
+            text-align: center;
+            color: rgba(135, 206, 250, 0.6);
+        }
+        .legal-links a {
+            color: rgba(175, 220, 255, 0.9);
+            text-decoration: none;
+            margin: 0 6px;
+            transition: opacity 0.25s ease;
+            opacity: 0.85;
+        }
+        .legal-links a:hover {
+            opacity: 1;
+        }
+
+        #loading { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            font-size: 18px; 
+            color: rgba(200, 230, 255, 0.9);
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 25px;
+            border: 4px solid rgba(135, 206, 250, 0.22);
+            border-top-color: #87CEEB;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .collapsible { 
+            background: rgba(6, 16, 36, 0.5);
+            padding: 18px;
+            margin-top: 22px;
+            border-radius: 14px;
+            border: 1px solid rgba(135, 206, 250, 0.15);
+        }
+        .collapsible h3 { 
+            font-size: 15px;
+            margin-bottom: 16px;
+            color: rgba(200, 230, 255, 0.95);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.1px;
+            font-family: 'Playfair Display', serif;
+            text-shadow: 0 0 10px rgba(135, 206, 250, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            #control-panel {
+                width: calc(100vw - 30px);
+                left: 15px;
+                max-height: 65vh;
+            }
+            .panel-content { max-height: calc(65vh - 80px); }
+            #compass-container { width: 130px; height: 130px; }
+            #info-display {
+                bottom: auto;
+                top: 15px;
+                right: 15px;
+                left: auto;
+                font-size: 11px;
+                padding: 14px 16px;
+            }
+            .datetime-group { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            #control-panel {
+                width: calc(100vw - 20px);
+                left: 10px;
+                top: 10px;
+            }
+            .panel-header h2 { font-size: 18px; }
+        }
+        @media (hover: none) and (pointer: coarse) {
+            .toggle-panel:hover, .toggle-group:hover, button:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <div id="loading">
+            <div class="loading-spinner"></div>
+            Loading celestial data...
+        </div>
+    </div>
+    
+    <!-- Compass -->
+    <div id="compass-container">
+        <div id="compass">
+            <div class="compass-base">
+                <div class="compass-rotator" id="compass-rotator">
+                    <div class="compass-rose"></div>
+                    <div class="compass-label n">N</div>
+                    <div class="compass-label e">E</div>
+                    <div class="compass-label s">S</div>
+                    <div class="compass-label w">W</div>
+                </div>
+            </div>
+            <div class="compass-pointer"></div>
+        </div>
+    </div>
+    
+    <!-- Control Panel -->
+    <div id="control-panel">
+        <div class="panel-header" onclick="togglePanel()">
+            <h2>Robert's Astro Map</h2>
+            <div class="toggle-panel"></div>
+        </div>
+        <div class="panel-content">
+            <div class="control-group">
+                <label for="latitude">Latitude</label>
+                <input type="number" id="latitude" min="-90" max="90" step="0.0001" value="51.198062">
+                <div class="error-message" id="lat-error">Latitude must be between -90 and 90</div>
+            </div>
+            <div class="control-group">
+                <label for="longitude">Longitude</label>
+                <input type="number" id="longitude" min="-180" max="180" step="0.0001" value="6.692754">
+                <div class="error-message" id="lon-error">Longitude must be between -180 and 180</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Date & Time</label>
+                <div class="datetime-group">
+                    <div class="datetime-input">
+                        <input type="date" id="date-input">
+                    </div>
+                    <div class="datetime-input">
+                        <input type="time" id="time-input" step="60">
+                    </div>
+                    <div class="datetime-input timezone-select">
+                        <select id="timezone-select">
+                            <option value="UTC">Universal Time (UTC)</option>
+                            <option value="Europe/London">London (GMT/BST)</option>
+                            <option value="Europe/Berlin" selected>Berlin (CET/CEST)</option>
+                            <option value="Europe/Paris">Paris (CET/CEST)</option>
+                            <option value="Europe/Madrid">Madrid (CET/CEST)</option>
+                            <option value="Europe/Rome">Rome (CET/CEST)</option>
+                            <option value="Europe/Moscow">Moscow (MSK)</option>
+                            <option value="Africa/Johannesburg">Johannesburg (SAST)</option>
+                            <option value="Asia/Dubai">Dubai (GST)</option>
+                            <option value="Asia/Kolkata">Kolkata (IST)</option>
+                            <option value="Asia/Bangkok">Bangkok (ICT)</option>
+                            <option value="Asia/Singapore">Singapore (SGT)</option>
+                            <option value="Asia/Hong_Kong">Hong Kong (HKT)</option>
+                            <option value="Asia/Shanghai">Shanghai (CST)</option>
+                            <option value="Asia/Tokyo">Tokyo (JST)</option>
+                            <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
+                            <option value="Pacific/Auckland">Auckland (NZST/NZDT)</option>
+                            <option value="Pacific/Honolulu">Honolulu (HST)</option>
+                            <option value="America/Vancouver">Vancouver (PST/PDT)</option>
+                            <option value="America/Los_Angeles">Los Angeles (PST/PDT)</option>
+                            <option value="America/Denver">Denver (MST/MDT)</option>
+                            <option value="America/Chicago">Chicago (CST/CDT)</option>
+                            <option value="America/Mexico_City">Mexico City (CST/CDT)</option>
+                            <option value="America/New_York">New York (EST/EDT)</option>
+                            <option value="America/Sao_Paulo">São Paulo (BRT)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="update-button" onclick="updateSkyAndURL()">✨ Update Sky View ✨</button>
+            
+            <div class="collapsible">
+                <h3>✨ Celestial Settings ✨</h3>
+                
+                <div class="control-group">
+                    <label for="mag-cutoff">Star Visibility<span class="range-value" id="mag-cutoff-value">10.0</span></label>
+                    <div class="range-container">
+                        <div class="range-track">
+                            <div class="range-fill" id="mag-cutoff-fill"></div>
+                        </div>
+                        <input type="range" id="mag-cutoff" min="0" max="10" step="0.1" value="10.0" oninput="updateVisualSetting('magCutoff', this.value)">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="star-scale">Star Radiance<span class="range-value" id="star-scale-value">1.0</span></label>
+                    <div class="range-container">
+                        <div class="range-track">
+                            <div class="range-fill" id="star-scale-fill"></div>
+                        </div>
+                        <input type="range" id="star-scale" min="0" max="10" step="0.1" value="1.0" oninput="updateVisualSetting('starScale', this.value)">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="brightness">Cosmic Brightness<span class="range-value" id="brightness-value">9.0</span></label>
+                    <div class="range-container">
+                        <div class="range-track">
+                            <div class="range-fill" id="brightness-fill"></div>
+                        </div>
+                        <input type="range" id="brightness" min="0" max="10" step="0.1" value="9.0" oninput="updateVisualSetting('brightness', this.value)">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="glow-intensity">Stellar Aura<span class="range-value" id="glow-intensity-value">8.5</span></label>
+                    <div class="range-container">
+                        <div class="range-track">
+                            <div class="range-fill" id="glow-intensity-fill"></div>
+                        </div>
+                        <input type="range" id="glow-intensity" min="0" max="10" step="0.1" value="8.5" oninput="updateVisualSetting('glowIntensity', this.value)">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="color-temp">Spectral Temperature<span class="range-value" id="color-temp-value">2.0</span></label>
+                    <div class="range-container">
+                        <div class="range-track">
+                            <div class="range-fill" id="color-temp-fill"></div>
+                        </div>
+                        <input type="range" id="color-temp" min="0" max="10" step="0.1" value="2.0" oninput="updateVisualSetting('colorTemp', this.value)">
+                    </div>
+                </div>
+                
+                <div class="toggle-group">
+                    <label>Stellar Scintillation</label>
+                    <div class="toggle-switch active" id="twinkle-toggle" onclick="toggleTwinkle()"></div>
+                </div>
+                
+                <div class="toggle-group">
+                    <label>Celestial Compass</label>
+                    <div class="toggle-switch active" id="compass-toggle" onclick="toggleCompass()"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Info Display -->
+    <div id="info-display">
+        <div id="star-count">Stars visible: 0</div>
+        <div id="location-info">Location: --</div>
+        <div id="time-info">Time: --</div>
+        <div class="info-hint">
+            Drag to explore • Arrow keys to navigate<br>
+            Scroll to zoom • H to hide panel
+        </div>
+        <div class="legal-links">
+            <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
+        </div>
+    </div>
+    
+    <!-- Load star catalog -->
+    <script src="stars.js"></script>
+    
+    <script>
+        // Global variables
+        let scene, camera, renderer, controls, starsMesh;
+        let horizonMesh, earthMesh, sunGlowMesh;
+        let currentSettings = {
+            magCutoff: 7.5,
+            starScale: 0.1,
+            brightness: 1.8,
+            glowIntensity: 0.85,
+            colorTemp: 0.4,
+            twinkle: true,
+            showCompass: true
+        };
+        let animationTime = 0;
+        let touchStartDistance = 0;
+
+        // Compass continuous rotation state
+        let prevAzimuth = 0;
+        let compassAccumDeg = 0;
+        
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 0.1);
+            
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enablePan = false;
+            controls.enableZoom = false; // Disable default zoom
+            controls.minDistance = 0.1;
+            controls.maxDistance = 0.1; // Keep camera fixed
+            controls.rotateSpeed = 0.4;
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Make look limits reasonable (prevents flipping)
+            controls.minPolarAngle = 0.05;
+            controls.maxPolarAngle = Math.PI - 0.05;
+            
+            setupCustomZoom();
+            createEarthAndHorizon();
+            setupTouchControls();
+            setupKeyboardControls();
+            
+            prevAzimuth = controls.getAzimuthalAngle();
+            document.getElementById('loading')?.remove();
+        }
+        
+        function setupCustomZoom() {
+            renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
+        }
+        
+        function onWheel(event) {
+            event.preventDefault();
+            const delta = event.deltaY;
+            const zoomSpeed = 0.05;
+            camera.fov = THREE.MathUtils.clamp(camera.fov + delta * zoomSpeed, 15, 120);
+            camera.updateProjectionMatrix();
+        }
+        
+        function createEarthAndHorizon() {
+            const earthGeometry = new THREE.SphereGeometry(99, 64, 32);
+            const earthMaterial = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 } },
+                vertexShader: `
+                    varying vec3 vPosition;
+                    void main() {
+                        vPosition = position;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    varying vec3 vPosition;
+                    void main() {
+                        float height = (vPosition.y + 99.0) / 100.0;
+                        vec3 color1 = vec3(0.0, 0.02, 0.08);
+                        vec3 color2 = vec3(0.02, 0.04, 0.1);
+                        vec3 color3 = vec3(0.01, 0.01, 0.03);
+                        vec3 color = mix(color1, color2, height);
+                        color = mix(color, color3, sin(time * 0.5 + vPosition.x * 0.05) * 0.3 + 0.5);
+                        float shimmer = 0.02 * sin(time * 2.0 + vPosition.x * 0.1 + vPosition.z * 0.1);
+                        color += shimmer;
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `,
+                transparent: false,
+                depthWrite: true,
+                depthTest: true
+            });
+            earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
+            earthMesh.position.y = -99.5;
+            earthMesh.renderOrder = -1;
+            scene.add(earthMesh);
+            
+            const horizonGeometry = new THREE.RingGeometry(98, 100, 128);
+            const horizonMaterial = new THREE.MeshBasicMaterial({ color: 0x4682B4, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
+            horizonMesh = new THREE.Mesh(horizonGeometry, horizonMaterial);
+            horizonMesh.rotation.x = Math.PI / 2;
+            horizonMesh.renderOrder = 0;
+            scene.add(horizonMesh);
+            
+            const sunGlowGeometry = new THREE.RingGeometry(95, 105, 128);
+            const sunGlowMaterial = new THREE.ShaderMaterial({
+                uniforms: { time: { value: 0 } },
+                vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                fragmentShader: `
+                    uniform float time;
+                    varying vec2 vUv;
+                    void main() {
+                        float dist = distance(vUv, vec2(0.5));
+                        float intensity = 0.15 + 0.08 * sin(time * 0.5);
+                        float alpha = intensity * (1.0 - smoothstep(0.45, 0.55, dist));
+                        vec3 color = mix(vec3(0.5, 0.7, 1.0), vec3(0.8, 0.6, 1.0), sin(time * 0.3) * 0.5 + 0.5);
+                        gl_FragColor = vec4(color, alpha);
+                    }
+                `,
+                transparent: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
+            });
+            sunGlowMesh = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
+            sunGlowMesh.rotation.x = Math.PI / 2;
+            sunGlowMesh.position.y = 0.1;
+            sunGlowMesh.renderOrder = 1;
+            scene.add(sunGlowMesh);
+        }
+        
+        function setupTouchControls() {
+            renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+            renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
+        }
+        
+        // Arrow keys control looking direction (no zoom)
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', (event) => {
+                // Avoid hijacking when typing in inputs/selects
+                const tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
+                if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+
+                const baseRot = 0.06; // radians per key press
+                const rot = event.shiftKey ? baseRot * 2 : baseRot;
+
+                let handled = false;
+                switch (event.key) {
+                    case 'ArrowLeft':
+                    case 'Left':
+                        controls.rotateLeft(rot);
+                        handled = true;
+                        break;
+                    case 'ArrowRight':
+                    case 'Right':
+                        controls.rotateLeft(-rot);
+                        handled = true;
+                        break;
+                    case 'ArrowUp':
+                    case 'Up':
+                        controls.rotateUp(rot);
+                        handled = true;
+                        break;
+                    case 'ArrowDown':
+                    case 'Down':
+                        controls.rotateUp(-rot);
+                        handled = true;
+                        break;
+                    default:
+                        if (event.key.toLowerCase() === 'h') togglePanel();
+                        break;
+                }
+                if (handled) {
+                    event.preventDefault();
+                    controls.update();
+                }
+            }, { passive: false });
+        }
+        
+        function onTouchStart(event) {
+            if (event.touches.length === 2) {
+                const dx = event.touches[0].pageX - event.touches[1].pageX;
+                const dy = event.touches[0].pageY - event.touches[1].pageY;
+                touchStartDistance = Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+        
+        function onTouchMove(event) {
+            if (event.touches.length === 2) {
+                event.preventDefault();
+                const dx = event.touches[0].pageX - event.touches[1].pageX;
+                const dy = event.touches[0].pageY - event.touches[1].pageY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const delta = touchStartDistance - distance;
+                const zoomSpeed = 0.1;
+                camera.fov = THREE.MathUtils.clamp(camera.fov + delta * zoomSpeed, 15, 120);
+                camera.updateProjectionMatrix();
+                touchStartDistance = distance;
+            }
+        }
+
+        // Continuous compass rotation with azimuth unwrapping
+        function updateCompass() {
+            if (!currentSettings.showCompass) return;
+            const rotator = document.getElementById('compass-rotator');
+            if (!rotator || !controls) return;
+
+            const curAz = controls.getAzimuthalAngle(); // radians, wraps at ±PI
+            // unwrap to continuous delta in (-PI, PI]
+            let delta = curAz - prevAzimuth;
+            delta = THREE.MathUtils.euclideanModulo(delta + Math.PI, Math.PI * 2) - Math.PI;
+            // Accumulate in degrees; rotate ring opposite to camera yaw so pointer indicates heading
+            compassAccumDeg += -delta * (180 / Math.PI);
+            prevAzimuth = curAz;
+
+            rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
+        }
+        
+        function horizontalToCartesian(altitude, azimuth, radius = 100) {
+            const altRad = altitude * Math.PI / 180;
+            const threejsAzimuth = (90 - azimuth) * Math.PI / 180;
+            const x = radius * Math.cos(altRad) * Math.cos(threejsAzimuth);
+            const y = radius * Math.sin(altRad);
+            const z = -radius * Math.cos(altRad) * Math.sin(threejsAzimuth);
+            return { x, y, z };
+        }
+        
+        function bvToColor(bv, tempScale) {
+            if (bv === null || bv === undefined || tempScale === 0) return new THREE.Color(1, 1, 1);
+            bv = Math.max(-0.4, Math.min(2.0, bv)) * tempScale;
+            let r, g, b;
+            if (bv < 0.0) { r = 0.6 + bv * 0.7; g = 0.7 + bv * 0.5; b = 1.0; }
+            else if (bv < 0.4) { r = 0.85 + bv * 0.375; g = 0.85 + bv * 0.125; b = 1.0 - bv * 0.875; }
+            else if (bv < 1.6) { r = 1.0; g = 0.9 - (bv - 0.4) * 0.5; b = 0.8 - (bv - 0.4) * 0.5; }
+            else { r = 1.0; g = 0.4 - (bv - 1.6) * 0.25; b = 0.3 - (bv - 1.6) * 0.25; }
+            return new THREE.Color(r, g, b);
+        }
+        
+        function sliderToActual(value, setting) {
+            const val = parseFloat(value);
+            switch(setting) {
+                case 'magCutoff': return 1 + (val / 10) * 6.5;
+                case 'starScale': return 0.01 + (val / 10) * 0.99;
+                case 'brightness': return 0.1 + (val / 10) * 1.9;
+                case 'glowIntensity': {
+                    // Fix: clamp to minimum effective intensity (avoid inverted behavior at very low values)
+                    const glowVal = val / 10;
+                    return Math.max(0.3, glowVal);
+                }
+                case 'colorTemp': return (val / 10) * 2;
+                default: return val;
+            }
+        }
+        
+        function validateInputs() {
+            let valid = true;
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            const latInput = document.getElementById('latitude');
+            const lonInput = document.getElementById('longitude');
+            const latError = document.getElementById('lat-error');
+            const lonError = document.getElementById('lon-error');
+            
+            if (isNaN(lat) || lat < -90 || lat > 90) {
+                latInput.classList.add('error');
+                latError.classList.add('show');
+                valid = false;
+            } else {
+                latInput.classList.remove('error');
+                latError.classList.remove('show');
+            }
+            
+            if (isNaN(lon) || lon < -180 || lon > 180) {
+                lonInput.classList.add('error');
+                lonError.classList.add('show');
+                valid = false;
+            } else {
+                lonInput.classList.remove('error');
+                lonError.classList.remove('show');
+            }
+            return valid;
+        }
+        
+        function createStarField() {
+            if (!validateInputs()) return;
+            const updateButton = document.getElementById('update-button');
+            updateButton.disabled = true;
+
+            setTimeout(() => {
+                if (starsMesh) {
+                    scene.remove(starsMesh);
+                    starsMesh.geometry.dispose();
+                    starsMesh.material.dispose();
+                }
+                
+                const lat = parseFloat(document.getElementById('latitude').value);
+                const lon = parseFloat(document.getElementById('longitude').value);
+                const dateStr = document.getElementById('date-input').value;
+                const timeStr = document.getElementById('time-input').value;
+                const timezone = document.getElementById('timezone-select').value;
+                
+                const localTime = moment.tz(`${dateStr} ${timeStr}`, timezone);
+                const utcTime = localTime.utc().toDate();
+                const observer = new Astronomy.Observer(lat, lon, 0);
+                
+                const positions = [], colors = [], sizes = [], twinklePhases = [];
+                let visibleCount = 0;
+                
+                hipparcos_catalog.forEach((star) => {
+                    const [hip, vmag, ra_deg, dec_deg, bv] = star;
+                    if (vmag > currentSettings.magCutoff) return;
+                    
+                    try {
+                        const ra_hours = ra_deg / 15.0;
+                        const horizontal = Astronomy.Horizon(utcTime, observer, ra_hours, dec_deg, 'normal');
+                        
+                        if (horizontal.altitude > -10) {
+                            const pos = horizontalToCartesian(horizontal.altitude, horizontal.azimuth);
+                            positions.push(pos.x, pos.y, pos.z);
+                            colors.push(...bvToColor(bv, currentSettings.colorTemp).toArray());
+                            const brightnessFactor = Math.max(0, currentSettings.magCutoff - vmag);
+                            const size = 0.5 + Math.pow(brightnessFactor, 1.8) * currentSettings.starScale;
+                            sizes.push(size);
+                            twinklePhases.push(Math.random() * Math.PI * 2);
+                            visibleCount++;
+                        }
+                    } catch (error) {
+                        console.warn(`Error processing star ${hip}:`, error);
+                    }
+                });
+                
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+                geometry.setAttribute('twinklePhase', new THREE.Float32BufferAttribute(twinklePhases, 1));
+                
+                const starTexture = createStarTexture(currentSettings.glowIntensity);
+                const material = new THREE.ShaderMaterial({
+                    uniforms: { 
+                        pointTexture: { value: starTexture }, 
+                        brightness: { value: currentSettings.brightness },
+                        time: { value: 0 },
+                        twinkleEnabled: { value: currentSettings.twinkle ? 1.0 : 0.0 }
+                    },
+                    vertexShader: `
+                        attribute float size; attribute float twinklePhase; varying vec3 vColor;
+                        uniform float time; uniform float twinkleEnabled;
+                        void main() {
+                            vColor = color;
+                            float twinkle = 1.0;
+                            if (twinkleEnabled > 0.5) {
+                                twinkle = 0.85 + 0.15 * sin(time * 0.8 + twinklePhase);
+                                if (size < 1.2) { twinkle *= 0.9 + 0.1 * sin(time * 1.2 + twinklePhase * 1.5); }
+                            }
+                            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                            gl_PointSize = size * twinkle * 400.0 / length(mvPosition.xyz);
+                            gl_Position = projectionMatrix * mvPosition;
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform sampler2D pointTexture; uniform float brightness; varying vec3 vColor;
+                        void main() {
+                            vec4 tex = texture2D(pointTexture, gl_PointCoord);
+                            gl_FragColor = vec4(vColor * brightness, 1.0) * tex;
+                        }
+                    `,
+                    blending: THREE.AdditiveBlending, depthTest: true, depthWrite: false, transparent: true, vertexColors: true
+                });
+                
+                starsMesh = new THREE.Points(geometry, material);
+                starsMesh.renderOrder = 2;
+                scene.add(starsMesh);
+                
+                document.getElementById('star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
+                document.getElementById('location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
+                document.getElementById('time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
+                updateButton.disabled = false;
+            }, 10);
+        }
+        
+        function createStarTexture(glowIntensity) {
+            // glowIntensity is already clamped to >= 0.3 in sliderToActual
+            const canvas = document.createElement('canvas');
+            const size = 256;
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const center = size / 2;
+            const gradient = ctx.createRadialGradient(center, center, 0, center, center, center);
+
+            // Ensure monotonic: higher glowIntensity => stronger halo, lower => tighter
+            const gi = Math.max(0.3, glowIntensity);
+            gradient.addColorStop(0.0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.12, `rgba(255,255,255,${0.9})`);
+            gradient.addColorStop(0.32, `rgba(255,255,255,${0.45 * gi})`);
+            gradient.addColorStop(0.62, `rgba(255,255,255,${0.18 * gi})`);
+            gradient.addColorStop(1.0, 'rgba(255,255,255,0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            return new THREE.CanvasTexture(canvas);
+        }
+        
+        function updateVisualSetting(setting, value) {
+            currentSettings[setting] = sliderToActual(value, setting);
+            if (starsMesh) {
+                if (setting === 'brightness' && starsMesh.material.uniforms.brightness) {
+                    starsMesh.material.uniforms.brightness.value = currentSettings.brightness;
+                } else {
+                    createStarField();
+                }
+            }
+        }
+        
+        function updateSkyAndURL() {
+            updateSky();
+            updateURL();
+        }
+        
+        function updateSky() {
+            currentSettings.magCutoff = sliderToActual(document.getElementById('mag-cutoff').value, 'magCutoff');
+            currentSettings.starScale = sliderToActual(document.getElementById('star-scale').value, 'starScale');
+            currentSettings.brightness = sliderToActual(document.getElementById('brightness').value, 'brightness');
+            currentSettings.glowIntensity = sliderToActual(document.getElementById('glow-intensity').value, 'glowIntensity');
+            currentSettings.colorTemp = sliderToActual(document.getElementById('color-temp').value, 'colorTemp');
+            createStarField();
+        }
+        
+        function updateURL() {
+            const params = new URLSearchParams();
+            params.set('lat', document.getElementById('latitude').value);
+            params.set('lon', document.getElementById('longitude').value);
+            params.set('date', document.getElementById('date-input').value);
+            params.set('time', document.getElementById('time-input').value);
+            params.set('tz', document.getElementById('timezone-select').value);
+            params.set('mag', document.getElementById('mag-cutoff').value);
+            params.set('scale', document.getElementById('star-scale').value);
+            params.set('bright', document.getElementById('brightness').value);
+            params.set('glow', document.getElementById('glow-intensity').value);
+            params.set('temp', document.getElementById('color-temp').value);
+            params.set('twinkle', currentSettings.twinkle ? '1' : '0');
+            params.set('compass', currentSettings.showCompass ? '1' : '0');
+            window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
+        }
+        
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.size === 0) return false;
+            if (params.has('lat')) document.getElementById('latitude').value = params.get('lat');
+            if (params.has('lon')) document.getElementById('longitude').value = params.get('lon');
+            if (params.has('date')) document.getElementById('date-input').value = params.get('date');
+            if (params.has('time')) document.getElementById('time-input').value = params.get('time');
+            if (params.has('tz')) document.getElementById('timezone-select').value = params.get('tz');
+            if (params.has('mag')) updateSliderVisual('mag-cutoff', 'mag-cutoff-fill', 'mag-cutoff-value', params.get('mag'));
+            if (params.has('scale')) updateSliderVisual('star-scale', 'star-scale-fill', 'star-scale-value', params.get('scale'));
+            if (params.has('bright')) updateSliderVisual('brightness', 'brightness-fill', 'brightness-value', params.get('bright'));
+            if (params.has('glow')) updateSliderVisual('glow-intensity', 'glow-intensity-fill', 'glow-intensity-value', params.get('glow'));
+            if (params.has('temp')) updateSliderVisual('color-temp', 'color-temp-fill', 'color-temp-value', params.get('temp'));
+            if (params.has('twinkle')) {
+                currentSettings.twinkle = params.get('twinkle') === '1';
+                document.getElementById('twinkle-toggle').classList.toggle('active', currentSettings.twinkle);
+            }
+            if (params.has('compass')) {
+                currentSettings.showCompass = params.get('compass') === '1';
+                document.getElementById('compass-toggle').classList.toggle('active', currentSettings.showCompass);
+            }
+            return true;
+        }
+        
+        function updateSliderVisual(sliderId, fillId, valueId, val) {
+            const slider = document.getElementById(sliderId);
+            const fill = document.getElementById(fillId);
+            const value = document.getElementById(valueId);
+            slider.value = val;
+            const percent = ((val - slider.min) / (slider.max - slider.min)) * 100;
+            fill.style.width = percent + '%';
+            value.textContent = parseFloat(val).toFixed(1);
+        }
+        
+        function togglePanel() {
+            const panel = document.getElementById('control-panel');
+            const info = document.getElementById('info-display');
+            panel.classList.toggle('collapsed');
+            info.classList.toggle('collapsed');
+        }
+        
+        function toggleTwinkle() {
+            const toggle = document.getElementById('twinkle-toggle');
+            toggle.classList.toggle('active');
+            currentSettings.twinkle = toggle.classList.contains('active');
+            if (starsMesh) {
+                starsMesh.material.uniforms.twinkleEnabled.value = currentSettings.twinkle ? 1.0 : 0.0;
+            }
+        }
+        
+        function toggleCompass() {
+            const toggle = document.getElementById('compass-toggle');
+            toggle.classList.toggle('active');
+            currentSettings.showCompass = toggle.classList.contains('active');
+            document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            animationTime += 0.008;
+            if (starsMesh?.material.uniforms.time) starsMesh.material.uniforms.time.value = animationTime;
+            if (sunGlowMesh?.material.uniforms.time) sunGlowMesh.material.uniforms.time.value = animationTime;
+            if (earthMesh?.material.uniforms.time) earthMesh.material.uniforms.time.value = animationTime;
+            controls.update();
+            updateCompass();
+            renderer.render(scene, camera);
+        }
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        window.addEventListener('load', () => {
+            const hasParams = loadFromURL();
+            if (!hasParams) {
+                const now = moment();
+                document.getElementById('date-input').value = now.format('YYYY-MM-DD');
+                document.getElementById('time-input').value = now.format('HH:mm');
+            }
+            // Initialize range sliders visual fill/value
+            updateSliderVisual('mag-cutoff', 'mag-cutoff-fill', 'mag-cutoff-value', document.getElementById('mag-cutoff').value);
+            updateSliderVisual('star-scale', 'star-scale-fill', 'star-scale-value', document.getElementById('star-scale').value);
+            updateSliderVisual('brightness', 'brightness-fill', 'brightness-value', document.getElementById('brightness').value);
+            updateSliderVisual('glow-intensity', 'glow-intensity-fill', 'glow-intensity-value', document.getElementById('glow-intensity').value);
+            updateSliderVisual('color-temp', 'color-temp-fill', 'color-temp-value', document.getElementById('color-temp').value);
+            
+            if (typeof hipparcos_catalog === 'undefined' || typeof Astronomy === 'undefined') {
+                document.getElementById('loading').innerHTML = '<div class="loading-spinner"></div>Error: Could not load celestial libraries';
+                return;
+            }
+            
+            initScene();
+            updateSky();
+            animate();
+        });
+    </script>
+</body>
+</html>
