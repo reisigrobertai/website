@@ -94,6 +94,10 @@
             z-index: 100;
         }
 
+        #compass-container.mobile-down {
+            bottom: 80px !important;
+        }
+
         #compass {
             width: 100%;
             height: 100%;
@@ -1092,10 +1096,6 @@
         let touchStartDistance = 0;
         let prevAzimuth = 0;
         let compassAccumDeg = 0;
-        
-        // For continuous arrow key rotation
-        const keyStates = {};
-        let rotationFrame;
 
         function initScene() {
             scene = new THREE.Scene();
@@ -1107,7 +1107,8 @@
             renderer = new THREE.WebGLRenderer({ 
                 antialias: true,
                 alpha: true,
-                powerPreference: "high-performance"
+                powerPreference: "high-performance",
+                preserveDrawingBuffer: true
             });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1118,7 +1119,7 @@
             controls.enableZoom = false;
             controls.minDistance = 0.1;
             controls.maxDistance = 0.1;
-            controls.rotateSpeed = -0.4; // Inverted for intuitive touch
+            controls.rotateSpeed = -0.4;
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minPolarAngle = 0.05;
@@ -1217,60 +1218,57 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
         }
         
-        // Enhanced arrow key navigation with continuous rotation on hold
+        // FIXED: Proper arrow key navigation
         function setupKeyboardControls() {
             document.addEventListener('keydown', (event) => {
                 const tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
                 if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
 
-                keyStates[event.key] = true;
+                const rotSpeed = 0.05; // Increased rotation speed
+                const zoomSpeed = 2;
+                let handled = false;
+
+                switch(event.key) {
+                    case 'ArrowLeft':
+                        controls.rotateLeft(rotSpeed);
+                        handled = true;
+                        break;
+                    case 'ArrowRight':
+                        controls.rotateLeft(-rotSpeed);
+                        handled = true;
+                        break;
+                    case 'ArrowUp':
+                        controls.rotateUp(rotSpeed);
+                        handled = true;
+                        break;
+                    case 'ArrowDown':
+                        controls.rotateUp(-rotSpeed);
+                        handled = true;
+                        break;
+                    case '+':
+                    case '=':
+                        camera.fov = Math.max(15, camera.fov - zoomSpeed);
+                        camera.updateProjectionMatrix();
+                        handled = true;
+                        break;
+                    case '-':
+                    case '_':
+                        camera.fov = Math.min(120, camera.fov + zoomSpeed);
+                        camera.updateProjectionMatrix();
+                        handled = true;
+                        break;
+                    case 'h':
+                    case 'H':
+                        togglePanel();
+                        handled = true;
+                        break;
+                }
+
+                if (handled) {
+                    event.preventDefault();
+                    controls.update();
+                }
             });
-
-            document.addEventListener('keyup', (event) => {
-                keyStates[event.key] = false;
-            });
-
-            function rotateLoop() {
-                let rotated = false;
-                const baseRot = 0.08;
-                const rot = (keyStates['Shift'] ? baseRot * 2 : baseRot) / 60; // Per frame for 60FPS
-                const zoomSpeed = 1;
-
-                if (keyStates['ArrowLeft']) {
-                    controls.rotateLeft(rot);
-                    rotated = true;
-                }
-                if (keyStates['ArrowRight']) {
-                    controls.rotateLeft(-rot);
-                    rotated = true;
-                }
-                if (keyStates['ArrowUp']) {
-                    controls.rotateUp(rot);
-                    rotated = true;
-                }
-                if (keyStates['ArrowDown']) {
-                    controls.rotateUp(-rot);
-                    rotated = true;
-                }
-                if (keyStates['+'] || keyStates['=']) {
-                    camera.fov = Math.max(15, camera.fov - zoomSpeed);
-                    camera.updateProjectionMatrix();
-                    rotated = true;
-                }
-                if (keyStates['-'] || keyStates['_']) {
-                    camera.fov = Math.min(120, camera.fov + zoomSpeed);
-                    camera.updateProjectionMatrix();
-                    rotated = true;
-                }
-
-                if (keyStates['h'] || keyStates['H']) togglePanel();
-
-                if (rotated) controls.update();
-
-                rotationFrame = requestAnimationFrame(rotateLoop);
-            }
-
-            rotateLoop();
         }
         
         function onTouchStart(event) {
@@ -1309,7 +1307,6 @@
             rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
         }
 
-        // Enhanced slider listeners for real-time updates
         function setupSliderListeners() {
             const sliders = [
                 { id: 'mag-cutoff', fill: 'mag-cutoff-fill', val: 'mag-cutoff-value' },
@@ -1330,11 +1327,8 @@
                     valueEl.textContent = parseFloat(slider.value).toFixed(1);
                 };
 
-                // Listen to both input and change events for comprehensive coverage
                 slider.addEventListener('input', updateVisual);
                 slider.addEventListener('change', updateVisual);
-                
-                // Initialize
                 updateVisual();
             });
         }
@@ -1499,7 +1493,7 @@
                 document.getElementById('desktop-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
                 document.getElementById('desktop-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
 
-                // Update mobile info (if on mobile)
+                // Update mobile info
                 if (document.getElementById('mobile-star-count')) {
                     document.getElementById('mobile-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
                     document.getElementById('mobile-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
@@ -1600,7 +1594,6 @@
             const slider = document.getElementById(sliderId);
             if (slider) {
                 slider.value = value;
-                // Trigger the input event to update visuals
                 slider.dispatchEvent(new Event('input'));
             }
         }
@@ -1612,17 +1605,18 @@
             info.classList.toggle('collapsed');
         }
 
+        // FIXED: Mobile compass movement
         function toggleMobilePanel() {
             if (window.innerWidth <= 768) {
                 const panel = document.getElementById('control-panel');
                 const compass = document.getElementById('compass-container');
                 panel.classList.toggle('mobile-collapsed');
 
-                // Adjust compass position
+                // Use CSS class instead of direct style manipulation
                 if (panel.classList.contains('mobile-collapsed')) {
-                    compass.style.bottom = '80px'; // Move down
+                    compass.classList.add('mobile-down');
                 } else {
-                    compass.style.bottom = 'calc(45vh + 20px)'; // Move up
+                    compass.classList.remove('mobile-down');
                 }
             }
         }
@@ -1643,54 +1637,62 @@
             document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
         }
 
-        // Screenshot functionality
+        // FIXED: High-resolution screenshot using current viewport aspect ratio
         function takeScreenshot() {
             // Hide UI elements
             const panel = document.getElementById('control-panel');
             const info = document.getElementById('info-display');
             const compass = document.getElementById('compass-container');
-            const originalPanelDisplay = panel.style.display;
-            const originalInfoDisplay = info.style.display;
-            const originalCompassDisplay = compass.style.display;
-
+            
             panel.style.display = 'none';
             info.style.display = 'none';
             compass.style.display = 'none';
 
-            // Save current state
-            const originalWidth = renderer.getSize().width;
-            const originalHeight = renderer.getSize().height;
-            const originalAspect = camera.aspect;
-            const originalFov = camera.fov;
+            // Calculate high-resolution dimensions maintaining current aspect ratio
+            const currentAspect = window.innerWidth / window.innerHeight;
+            const targetHeight = 2880; // 4K height
+            const targetWidth = Math.round(targetHeight * currentAspect);
 
-            // Set high resolution (4:3 landscape, e.g., 3840x2880 for professional quality)
-            const screenshotWidth = 3840;
-            const screenshotHeight = 2880;
-            renderer.setSize(screenshotWidth, screenshotHeight);
-            camera.aspect = screenshotWidth / screenshotHeight;
-            camera.updateProjectionMatrix();
+            // Create offscreen canvas for high-res rendering
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = targetWidth;
+            offscreenCanvas.height = targetHeight;
 
-            // Render one frame without UI
-            renderer.render(scene, camera);
+            const offscreenRenderer = new THREE.WebGLRenderer({ 
+                canvas: offscreenCanvas,
+                antialias: true,
+                alpha: true,
+                preserveDrawingBuffer: true
+            });
+            offscreenRenderer.setSize(targetWidth, targetHeight);
+            offscreenRenderer.setPixelRatio(1); // Use device pixel ratio of 1 for consistent high-res output
 
-            // Capture as JPG
-            const imgData = renderer.domElement.toDataURL('image/jpeg');
+            // Update camera for high-res render
+            const tempCamera = camera.clone();
+            tempCamera.aspect = targetWidth / targetHeight;
+            tempCamera.updateProjectionMatrix();
 
-            // Restore original state
-            renderer.setSize(originalWidth, originalHeight);
-            camera.aspect = originalAspect;
-            camera.fov = originalFov;
-            camera.updateProjectionMatrix();
+            // Render high-res frame
+            offscreenRenderer.render(scene, tempCamera);
 
-            panel.style.display = originalPanelDisplay;
-            info.style.display = originalInfoDisplay;
-            compass.style.display = originalCompassDisplay;
+            // Get image data
+            const imgData = offscreenCanvas.toDataURL('image/jpeg', 0.95);
+
+            // Clean up
+            offscreenRenderer.dispose();
+
+            // Restore UI
+            panel.style.display = '';
+            info.style.display = '';
+            compass.style.display = '';
 
             // Download
             const link = document.createElement('a');
             link.href = imgData;
-            link.download = 'astro-map-screenshot.jpg';
+            link.download = `astro-map-${Date.now()}.jpg`;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         }
         
         function animate() {
