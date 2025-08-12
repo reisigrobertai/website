@@ -24,8 +24,8 @@
         :root {
             --primary-blue: #87CEEB;
             --secondary-blue: #4682B4;
-            --accent-gold: #B8860B; /* Darker gold tone */
-            --deep-gold: #8B6508; /* Even darker variant if needed */
+            --accent-gold: #8B6508; /* Even darker gold tone */
+            --deep-gold: #8B6508;
             --mystical-purple: #9370DB;
             --cosmic-dark: #0a0a1a;
             --panel-bg: radial-gradient(circle at 25% 0%, rgba(12, 28, 56, 0.92) 0%, rgba(5, 12, 28, 0.96) 70%);
@@ -287,10 +287,6 @@
 
             #control-panel.mobile-collapsed {
                 transform: translateY(calc(100% - 60px));
-            }
-
-            #control-panel.mobile-collapsed + #compass-container {
-                bottom: 80px; /* Move compass down when panel minimized */
             }
 
             #info-display {
@@ -1045,9 +1041,9 @@
 
             <!-- Integrated mobile info section -->
             <div class="mobile-info">
-                <div id="star-count">Stars visible: 0</div>
-                <div id="location-info">Location: --</div>
-                <div id="time-info">Time: --</div>
+                <div id="mobile-star-count">Stars visible: 0</div>
+                <div id="mobile-location-info">Location: --</div>
+                <div id="mobile-time-info">Time: --</div>
                 <div class="info-hint">
                     Drag to explore • Arrow keys to navigate<br>
                     Scroll to zoom • H to hide panel
@@ -1056,14 +1052,17 @@
                     <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
                 </div>
             </div>
+
+            <!-- Screenshot button -->
+            <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
         </div>
     </div>
     
     <!-- Info Display (desktop only) -->
     <div id="info-display" class="desktop-info">
-        <div id="star-count">Stars visible: 0</div>
-        <div id="location-info">Location: --</div>
-        <div id="time-info">Time: --</div>
+        <div id="desktop-star-count">Stars visible: 0</div>
+        <div id="desktop-location-info">Location: --</div>
+        <div id="desktop-time-info">Time: --</div>
         <div class="info-hint">
             Drag to explore • Arrow keys to navigate<br>
             Scroll to zoom • H to hide panel
@@ -1094,6 +1093,10 @@
         let prevAzimuth = 0;
         let compassAccumDeg = 0;
         
+        // For continuous arrow key rotation
+        const keyStates = {};
+        let rotationFrame;
+
         function initScene() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
@@ -1214,42 +1217,49 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
         }
         
-        // Proper arrow key navigation
+        // Enhanced arrow key navigation with continuous rotation on hold
         function setupKeyboardControls() {
             document.addEventListener('keydown', (event) => {
                 const tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
                 if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
 
-                const baseRot = 0.08;
-                const rot = event.shiftKey ? baseRot * 2 : baseRot;
+                keyStates[event.key] = true;
+            });
 
-                let handled = false;
-                switch (event.key) {
-                    case 'ArrowLeft':
-                        controls.rotateLeft(rot);
-                        handled = true;
-                        break;
-                    case 'ArrowRight':
-                        controls.rotateLeft(-rot);
-                        handled = true;
-                        break;
-                    case 'ArrowUp':
-                        controls.rotateUp(rot);
-                        handled = true;
-                        break;
-                    case 'ArrowDown':
-                        controls.rotateUp(-rot);
-                        handled = true;
-                        break;
-                    default:
-                        if (event.key.toLowerCase() === 'h') togglePanel();
-                        break;
+            document.addEventListener('keyup', (event) => {
+                keyStates[event.key] = false;
+            });
+
+            function rotateLoop() {
+                let rotated = false;
+                const baseRot = 0.08;
+                const rot = (keyStates['Shift'] ? baseRot * 2 : baseRot) / 60; // Per frame for 60FPS
+
+                if (keyStates['ArrowLeft']) {
+                    controls.rotateLeft(rot);
+                    rotated = true;
                 }
-                if (handled) {
-                    event.preventDefault();
-                    controls.update();
+                if (keyStates['ArrowRight']) {
+                    controls.rotateLeft(-rot);
+                    rotated = true;
                 }
-            }, { passive: false });
+                if (keyStates['ArrowUp']) {
+                    controls.rotateUp(rot);
+                    rotated = true;
+                }
+                if (keyStates['ArrowDown']) {
+                    controls.rotateUp(-rot);
+                    rotated = true;
+                }
+
+                if (keyStates['h'] || keyStates['H']) togglePanel();
+
+                if (rotated) controls.update();
+
+                rotationFrame = requestAnimationFrame(rotateLoop);
+            }
+
+            rotateLoop();
         }
         
         function onTouchStart(event) {
@@ -1473,9 +1483,18 @@
                 starsMesh.renderOrder = 2;
                 scene.add(starsMesh);
                 
-                document.getElementById('star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
-                document.getElementById('location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
-                document.getElementById('time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
+                // Update desktop info
+                document.getElementById('desktop-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
+                document.getElementById('desktop-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
+                document.getElementById('desktop-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
+
+                // Update mobile info (if on mobile)
+                if (document.getElementById('mobile-star-count')) {
+                    document.getElementById('mobile-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
+                    document.getElementById('mobile-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
+                    document.getElementById('mobile-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
+                }
+                
                 updateButton.disabled = false;
             }, 10);
         }
@@ -1585,7 +1604,15 @@
         function toggleMobilePanel() {
             if (window.innerWidth <= 768) {
                 const panel = document.getElementById('control-panel');
+                const compass = document.getElementById('compass-container');
                 panel.classList.toggle('mobile-collapsed');
+
+                // Adjust compass position
+                if (panel.classList.contains('mobile-collapsed')) {
+                    compass.style.bottom = '80px'; // Move down
+                } else {
+                    compass.style.bottom = 'calc(45vh + 20px)'; // Move up
+                }
             }
         }
         
@@ -1603,6 +1630,38 @@
             toggle.classList.toggle('active');
             currentSettings.showCompass = toggle.classList.contains('active');
             document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
+        }
+
+        // Screenshot functionality
+        function takeScreenshot() {
+            // Hide UI elements
+            const panel = document.getElementById('control-panel');
+            const info = document.getElementById('info-display');
+            const compass = document.getElementById('compass-container');
+            const originalPanelDisplay = panel.style.display;
+            const originalInfoDisplay = info.style.display;
+            const originalCompassDisplay = compass.style.display;
+
+            panel.style.display = 'none';
+            info.style.display = 'none';
+            compass.style.display = 'none';
+
+            // Render one frame without UI
+            renderer.render(scene, camera);
+
+            // Capture as JPG
+            const imgData = renderer.domElement.toDataURL('image/jpeg');
+
+            // Restore UI
+            panel.style.display = originalPanelDisplay;
+            info.style.display = originalInfoDisplay;
+            compass.style.display = originalCompassDisplay;
+
+            // Download
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = 'astro-map-screenshot.jpg';
+            link.click();
         }
         
         function animate() {
