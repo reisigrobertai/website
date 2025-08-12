@@ -1096,7 +1096,7 @@
         let touchStartDistance = 0;
         let prevAzimuth = 0;
         let compassAccumDeg = 0;
-        
+
         function initScene() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
@@ -1107,7 +1107,8 @@
             renderer = new THREE.WebGLRenderer({ 
                 antialias: true,
                 alpha: true,
-                powerPreference: "high-performance"
+                powerPreference: "high-performance",
+                preserveDrawingBuffer: true
             });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1118,7 +1119,7 @@
             controls.enableZoom = false;
             controls.minDistance = 0.1;
             controls.maxDistance = 0.1;
-            controls.rotateSpeed = -0.4; // Inverted for intuitive touch
+            controls.rotateSpeed = -0.4;
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minPolarAngle = 0.05;
@@ -1217,6 +1218,7 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
         }
         
+        // FIXED: Robust arrow key navigation
         function setupKeyboardControls() {
             const keysDown = {};
 
@@ -1596,7 +1598,6 @@
             const slider = document.getElementById(sliderId);
             if (slider) {
                 slider.value = value;
-                // Trigger the input event to update visuals
                 slider.dispatchEvent(new Event('input'));
             }
         }
@@ -1608,6 +1609,7 @@
             info.classList.toggle('collapsed');
         }
 
+        // FIXED: Mobile compass movement with CSS class toggle
         function toggleMobilePanel() {
             if (window.innerWidth <= 768) {
                 const panel = document.getElementById('control-panel');
@@ -1633,50 +1635,50 @@
             document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
         }
 
-        // FIXED: High-resolution screenshot using current renderer and viewport
+        // FIXED: High-resolution screenshot using current renderer
         function takeScreenshot() {
-          const panel = document.getElementById('control-panel');
-          const info = document.getElementById('info-display');
-          const compass = document.getElementById('compass-container');
+            const panel = document.getElementById('control-panel');
+            const info = document.getElementById('info-display');
+            const compass = document.getElementById('compass-container');
 
-          const prevPanel = panel.style.display;
-          const prevInfo = info ? info.style.display : '';
-          const prevCompass = compass.style.display;
+            const prevPanel = panel.style.display;
+            const prevInfo  = info ? info.style.display : '';
+            const prevCompass = compass.style.display;
 
-          panel.style.display = 'none';
-          if (info) info.style.display = 'none';
-          compass.style.display = 'none';
+            panel.style.display = 'none';
+            if (info) info.style.display = 'none';
+            compass.style.display = 'none';
 
-          const oldPR = renderer.getPixelRatio();
-          const oldSize = { w: renderer.getSize(new THREE.Vector2()).x, h: renderer.getSize(new THREE.Vector2()).y };
-          const oldAspect = camera.aspect;
+            const oldPR = renderer.getPixelRatio();
+            const oldSize = { w: renderer.getSize(new THREE.Vector2()).x, h: renderer.getSize(new THREE.Vector2()).y };
+            const oldAspect = camera.aspect;
 
-          // Use current viewport, but render sharper
-          const scale = Math.min(3, Math.max(2, window.devicePixelRatio)); // 2–3x for quality without crashing
-          renderer.setPixelRatio(scale);
-          renderer.setSize(window.innerWidth, window.innerHeight);
-          camera.aspect = window.innerWidth / window.innerHeight;
-          camera.updateProjectionMatrix();
+            // Use current viewport, but render sharper
+            const scale = Math.min(3, Math.max(2, window.devicePixelRatio)); // 2–3x for quality without crashing
+            renderer.setPixelRatio(scale);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
 
-          renderer.render(scene, camera);
-          const data = renderer.domElement.toDataURL('image/jpeg', 0.95);
+            renderer.render(scene, camera);
+            const data = renderer.domElement.toDataURL('image/jpeg', 0.95);
 
-          // restore
-          renderer.setPixelRatio(oldPR);
-          renderer.setSize(oldSize.w, oldSize.h);
-          camera.aspect = oldAspect;
-          camera.updateProjectionMatrix();
+            // restore
+            renderer.setPixelRatio(oldPR);
+            renderer.setSize(oldSize.w, oldSize.h);
+            camera.aspect = oldAspect;
+            camera.updateProjectionMatrix();
 
-          panel.style.display = prevPanel;
-          if (info) info.style.display = prevInfo;
-          compass.style.display = prevCompass;
+            panel.style.display = prevPanel;
+            if (info) info.style.display = prevInfo;
+            compass.style.display = prevCompass;
 
-          const a = document.createElement('a');
-          a.href = data;
-          a.download = `astro-map-${Date.now()}.jpg`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
+            const a = document.createElement('a');
+            a.href = data;
+            a.download = `astro-map-${Date.now()}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         }
         
         function animate() {
