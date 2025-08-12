@@ -75,7 +75,6 @@
         
         #compass-container {
             position: absolute;
-            bottom: 30px !important;
             left: 50%;
             transform: translateX(-50%);
             width: 200px;
@@ -306,14 +305,9 @@
             }
 
             #compass-container {
-                width: 140px !important;
-                height: 140px !important;
-                bottom: calc(45vh + 20px) !important;
+                width: 140px;
+                height: 140px;
                 transition: bottom 0.3s ease;
-            }
-
-            #control-panel.mobile-collapsed ~ #compass-container {
-                bottom: 80px !important;
             }
         }
 
@@ -1047,9 +1041,6 @@
         let prevAzimuth = 0;
         let compassAccumDeg = 0;
         
-        const keyStates = {};
-        let rotationFrame;
-
         function initScene() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
@@ -1543,7 +1534,13 @@
         function toggleMobilePanel() {
             if (window.innerWidth <= 768) {
                 const panel = document.getElementById('control-panel');
+                const compass = document.getElementById('compass-container');
                 panel.classList.toggle('mobile-collapsed');
+                if (panel.classList.contains('mobile-collapsed')) {
+                    compass.style.bottom = '80px';
+                } else {
+                    compass.style.bottom = 'calc(45vh + 20px)';
+                }
             }
         }
         
@@ -1620,6 +1617,7 @@
             }
             
             initScene();
+            toggleCompass();
             updateSky();
             animate();
         });
