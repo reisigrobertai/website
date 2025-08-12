@@ -326,7 +326,6 @@
             #compass-container {
                 width: 140px;
                 height: 140px;
-                bottom: calc(45vh + 20px);
                 transition: bottom 0.3s ease;
             }
         }
@@ -1218,13 +1217,13 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
         }
         
-        // FIXED: Proper arrow key navigation
+        // FIXED: Proper arrow key navigation with increased sensitivity
         function setupKeyboardControls() {
             document.addEventListener('keydown', (event) => {
                 const tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
                 if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
 
-                const rotSpeed = 0.05; // Increased rotation speed
+                const rotSpeed = 0.2; // Increased for better response
                 const zoomSpeed = 2;
                 let handled = false;
 
@@ -1493,7 +1492,7 @@
                 document.getElementById('desktop-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
                 document.getElementById('desktop-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
 
-                // Update mobile info
+                // Update mobile info (if on mobile)
                 if (document.getElementById('mobile-star-count')) {
                     document.getElementById('mobile-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
                     document.getElementById('mobile-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
@@ -1653,33 +1652,25 @@
             const targetHeight = 2880; // 4K height
             const targetWidth = Math.round(targetHeight * currentAspect);
 
-            // Create offscreen canvas for high-res rendering
-            const offscreenCanvas = document.createElement('canvas');
-            offscreenCanvas.width = targetWidth;
-            offscreenCanvas.height = targetHeight;
+            // Temporarily resize renderer
+            const originalWidth = renderer.domElement.width;
+            const originalHeight = renderer.domElement.height;
+            const originalAspect = camera.aspect;
 
-            const offscreenRenderer = new THREE.WebGLRenderer({ 
-                canvas: offscreenCanvas,
-                antialias: true,
-                alpha: true,
-                preserveDrawingBuffer: true
-            });
-            offscreenRenderer.setSize(targetWidth, targetHeight);
-            offscreenRenderer.setPixelRatio(1); // Use device pixel ratio of 1 for consistent high-res output
-
-            // Update camera for high-res render
-            const tempCamera = camera.clone();
-            tempCamera.aspect = targetWidth / targetHeight;
-            tempCamera.updateProjectionMatrix();
+            renderer.setSize(targetWidth, targetHeight);
+            camera.aspect = targetWidth / targetHeight;
+            camera.updateProjectionMatrix();
 
             // Render high-res frame
-            offscreenRenderer.render(scene, tempCamera);
+            renderer.render(scene, camera);
 
-            // Get image data
-            const imgData = offscreenCanvas.toDataURL('image/jpeg', 0.95);
+            // Capture as JPG
+            const imgData = renderer.domElement.toDataURL('image/jpeg', 0.95);
 
-            // Clean up
-            offscreenRenderer.dispose();
+            // Restore original size
+            renderer.setSize(originalWidth, originalHeight);
+            camera.aspect = originalAspect;
+            camera.updateProjectionMatrix();
 
             // Restore UI
             panel.style.display = '';
