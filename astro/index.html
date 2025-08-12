@@ -75,7 +75,7 @@
         
         #compass-container {
             position: absolute;
-            bottom: 30px;
+            bottom: 30px !important;
             left: 50%;
             transform: translateX(-50%);
             width: 200px;
@@ -83,10 +83,6 @@
             pointer-events: none;
             transition: opacity 0.5s ease, bottom 0.3s ease;
             z-index: 100;
-        }
-
-        #compass-container.mobile-down {
-            bottom: 80px !important;
         }
 
         #compass {
@@ -310,10 +306,14 @@
             }
 
             #compass-container {
-                width: 140px;
-                height: 140px;
-                bottom: calc(45vh + 20px);
+                width: 140px !important;
+                height: 140px !important;
+                bottom: calc(45vh + 20px) !important;
                 transition: bottom 0.3s ease;
+            }
+
+            #control-panel.mobile-collapsed ~ #compass-container {
+                bottom: 80px !important;
             }
         }
 
@@ -753,15 +753,6 @@
             font-family: 'Crimson Text', serif;
         }
         
-        .info-hint {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 215, 0, 0.3);
-            font-size: 11px;
-            color: rgba(200, 230, 255, 0.8);
-            line-height: 1.6;
-        }
-        
         .legal-links {
             margin-top: 12px;
             font-size: 10px;
@@ -786,15 +777,6 @@
             margin: 8px 0;
             color: rgba(255, 215, 0, 0.9);
             font-family: 'Crimson Text', serif;
-        }
-
-        .mobile-info .info-hint {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 215, 0, 0.3);
-            font-size: 11px;
-            color: rgba(200, 230, 255, 0.8);
-            line-height: 1.6;
         }
 
         .mobile-info .legal-links {
@@ -1028,9 +1010,6 @@
                 <div id="mobile-star-count">Stars visible: 0</div>
                 <div id="mobile-location-info">Location: --</div>
                 <div id="mobile-time-info">Time: --</div>
-                <div class="info-hint">
-                    Scroll to zoom • H to hide panel
-                </div>
                 <div class="legal-links">
                     <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
                 </div>
@@ -1044,9 +1023,6 @@
         <div id="desktop-star-count">Stars visible: 0</div>
         <div id="desktop-location-info">Location: --</div>
         <div id="desktop-time-info">Time: --</div>
-        <div class="info-hint">
-            Scroll to zoom • H to hide panel
-        </div>
         <div class="legal-links">
             <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
         </div>
@@ -1070,6 +1046,9 @@
         let touchStartDistance = 0;
         let prevAzimuth = 0;
         let compassAccumDeg = 0;
+        
+        const keyStates = {};
+        let rotationFrame;
 
         function initScene() {
             scene = new THREE.Scene();
@@ -1081,8 +1060,7 @@
             renderer = new THREE.WebGLRenderer({ 
                 antialias: true,
                 alpha: true,
-                powerPreference: "high-performance",
-                preserveDrawingBuffer: true
+                powerPreference: "high-performance"
             });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1194,10 +1172,39 @@
         
         function setupKeyboardControls() {
             document.addEventListener('keydown', (event) => {
-                if (event.key.toLowerCase() === 'h') {
-                    togglePanel();
+                const tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
+                if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+
+                const baseRot = 0.1;
+                const rot = event.shiftKey ? baseRot * 2 : baseRot;
+
+                let handled = false;
+                switch (event.key) {
+                    case 'ArrowLeft':
+                        controls.rotateLeft(rot);
+                        handled = true;
+                        break;
+                    case 'ArrowRight':
+                        controls.rotateLeft(-rot);
+                        handled = true;
+                        break;
+                    case 'ArrowUp':
+                        controls.rotateUp(rot);
+                        handled = true;
+                        break;
+                    case 'ArrowDown':
+                        controls.rotateUp(-rot);
+                        handled = true;
+                        break;
+                    default:
+                        if (event.key.toLowerCase() === 'h') togglePanel();
+                        break;
                 }
-            });
+                if (handled) {
+                    event.preventDefault();
+                    controls.update();
+                }
+            }, { passive: false });
         }
         
         function onTouchStart(event) {
@@ -1258,6 +1265,7 @@
 
                 slider.addEventListener('input', updateVisual);
                 slider.addEventListener('change', updateVisual);
+                
                 updateVisual();
             });
         }
@@ -1535,9 +1543,7 @@
         function toggleMobilePanel() {
             if (window.innerWidth <= 768) {
                 const panel = document.getElementById('control-panel');
-                const compass = document.getElementById('compass-container');
                 panel.classList.toggle('mobile-collapsed');
-                compass.classList.toggle('mobile-down', panel.classList.contains('mobile-collapsed'));
             }
         }
         
@@ -1561,17 +1567,21 @@
             const panel = document.getElementById('control-panel');
             const info = document.getElementById('info-display');
             const compass = document.getElementById('compass-container');
-            
+            const originalPanelDisplay = panel.style.display;
+            const originalInfoDisplay = info.style.display;
+            const originalCompassDisplay = compass.style.display;
+
             panel.style.display = 'none';
             info.style.display = 'none';
             compass.style.display = 'none';
 
             renderer.render(scene, camera);
+
             const imgData = renderer.domElement.toDataURL('image/jpeg');
 
-            panel.style.display = '';
-            info.style.display = '';
-            compass.style.display = '';
+            panel.style.display = originalPanelDisplay;
+            info.style.display = originalInfoDisplay;
+            compass.style.display = originalCompassDisplay;
 
             const link = document.createElement('a');
             link.href = imgData;
