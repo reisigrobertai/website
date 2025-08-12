@@ -24,8 +24,8 @@
         :root {
             --primary-blue: #87CEEB;
             --secondary-blue: #4682B4;
-            --accent-gold: #FFD700;
-            --deep-gold: #B8860B;
+            --accent-gold: #B8860B; /* Darker gold tone */
+            --deep-gold: #8B6508; /* Even darker variant if needed */
             --mystical-purple: #9370DB;
             --cosmic-dark: #0a0a1a;
             --panel-bg: radial-gradient(circle at 25% 0%, rgba(12, 28, 56, 0.92) 0%, rgba(5, 12, 28, 0.96) 70%);
@@ -70,6 +70,16 @@
             filter: invert(1);
             cursor: pointer;
         }
+
+        /* Remove spin buttons for number inputs */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
         
         /* ENHANCED MYSTICAL COMPASS */
         #compass-container {
@@ -80,7 +90,7 @@
             width: 200px;
             height: 200px;
             pointer-events: none;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.5s ease, bottom 0.3s ease;
             z-index: 100;
         }
 
@@ -279,15 +289,25 @@
                 transform: translateY(calc(100% - 60px));
             }
 
+            #control-panel.mobile-collapsed + #compass-container {
+                bottom: 80px; /* Move compass down when panel minimized */
+            }
+
             #info-display {
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                bottom: auto;
-                left: auto;
-                padding: 12px 16px;
-                font-size: 11px;
-                max-width: calc(100vw - 20px);
+                display: none; /* Hide separate info on mobile */
+            }
+
+            .mobile-info {
+                display: block; /* Show integrated info in panel on mobile */
+                margin-top: 24px;
+                padding: 20px;
+                background: rgba(6, 16, 36, 0.6);
+                border-radius: 16px;
+                border: 2px solid rgba(255, 215, 0, 0.2);
+            }
+
+            .desktop-info {
+                display: none; /* Hide in mobile integrated view */
             }
 
             .mobile-handle {
@@ -307,11 +327,14 @@
                 width: 140px;
                 height: 140px;
                 bottom: calc(45vh + 20px);
+                transition: bottom 0.3s ease;
             }
         }
 
         @media (min-width: 769px) {
             .mobile-handle { display: none; }
+            .mobile-info { display: none; }
+            .desktop-info { display: block; }
         }
         
         #control-panel.collapsed {
@@ -406,6 +429,19 @@
         }
         
         .panel-content::-webkit-scrollbar { display: none; }
+
+        /* Remove scrollbars for timezone select */
+        .timezone-select select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .timezone-select select::-webkit-scrollbar {
+            display: none;
+        }
 
         .control-group { 
             margin-bottom: 24px;
@@ -763,6 +799,41 @@
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
+        .mobile-info div {
+            margin: 8px 0;
+            color: rgba(255, 215, 0, 0.9);
+            font-family: 'Crimson Text', serif;
+        }
+
+        .mobile-info .info-hint {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 215, 0, 0.3);
+            font-size: 11px;
+            color: rgba(200, 230, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .mobile-info .legal-links {
+            margin-top: 12px;
+            font-size: 10px;
+            text-align: center;
+            color: rgba(255, 215, 0, 0.6);
+        }
+
+        .mobile-info .legal-links a {
+            color: rgba(255, 215, 0, 0.8);
+            text-decoration: none;
+            margin: 0 8px;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+
+        .mobile-info .legal-links a:hover {
+            opacity: 1;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
         #loading { 
             position: absolute; 
             top: 50%; 
@@ -971,11 +1042,25 @@
                     <div class="toggle-switch active" id="compass-toggle" onclick="toggleCompass()"></div>
                 </div>
             </div>
+
+            <!-- Integrated mobile info section -->
+            <div class="mobile-info">
+                <div id="star-count">Stars visible: 0</div>
+                <div id="location-info">Location: --</div>
+                <div id="time-info">Time: --</div>
+                <div class="info-hint">
+                    Drag to explore • Arrow keys to navigate<br>
+                    Scroll to zoom • H to hide panel
+                </div>
+                <div class="legal-links">
+                    <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- Info Display -->
-    <div id="info-display">
+    <!-- Info Display (desktop only) -->
+    <div id="info-display" class="desktop-info">
         <div id="star-count">Stars visible: 0</div>
         <div id="location-info">Location: --</div>
         <div id="time-info">Time: --</div>
