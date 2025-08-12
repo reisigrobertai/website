@@ -1234,6 +1234,7 @@
                 let rotated = false;
                 const baseRot = 0.08;
                 const rot = (keyStates['Shift'] ? baseRot * 2 : baseRot) / 60; // Per frame for 60FPS
+                const zoomSpeed = 1;
 
                 if (keyStates['ArrowLeft']) {
                     controls.rotateLeft(rot);
@@ -1249,6 +1250,16 @@
                 }
                 if (keyStates['ArrowDown']) {
                     controls.rotateUp(-rot);
+                    rotated = true;
+                }
+                if (keyStates['+'] || keyStates['=']) {
+                    camera.fov = Math.max(15, camera.fov - zoomSpeed);
+                    camera.updateProjectionMatrix();
+                    rotated = true;
+                }
+                if (keyStates['-'] || keyStates['_']) {
+                    camera.fov = Math.min(120, camera.fov + zoomSpeed);
+                    camera.updateProjectionMatrix();
                     rotated = true;
                 }
 
@@ -1646,13 +1657,31 @@
             info.style.display = 'none';
             compass.style.display = 'none';
 
+            // Save current state
+            const originalWidth = renderer.getSize().width;
+            const originalHeight = renderer.getSize().height;
+            const originalAspect = camera.aspect;
+            const originalFov = camera.fov;
+
+            // Set high resolution (4:3 landscape, e.g., 3840x2880 for professional quality)
+            const screenshotWidth = 3840;
+            const screenshotHeight = 2880;
+            renderer.setSize(screenshotWidth, screenshotHeight);
+            camera.aspect = screenshotWidth / screenshotHeight;
+            camera.updateProjectionMatrix();
+
             // Render one frame without UI
             renderer.render(scene, camera);
 
             // Capture as JPG
             const imgData = renderer.domElement.toDataURL('image/jpeg');
 
-            // Restore UI
+            // Restore original state
+            renderer.setSize(originalWidth, originalHeight);
+            camera.aspect = originalAspect;
+            camera.fov = originalFov;
+            camera.updateProjectionMatrix();
+
             panel.style.display = originalPanelDisplay;
             info.style.display = originalInfoDisplay;
             compass.style.display = originalCompassDisplay;
