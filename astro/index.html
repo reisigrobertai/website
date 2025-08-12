@@ -326,6 +326,7 @@
             #compass-container {
                 width: 140px;
                 height: 140px;
+                bottom: calc(45vh + 20px);
                 transition: bottom 0.3s ease;
             }
         }
@@ -1095,7 +1096,7 @@
         let touchStartDistance = 0;
         let prevAzimuth = 0;
         let compassAccumDeg = 0;
-
+        
         function initScene() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
@@ -1106,8 +1107,7 @@
             renderer = new THREE.WebGLRenderer({ 
                 antialias: true,
                 alpha: true,
-                powerPreference: "high-performance",
-                preserveDrawingBuffer: true
+                powerPreference: "high-performance"
             });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1118,7 +1118,7 @@
             controls.enableZoom = false;
             controls.minDistance = 0.1;
             controls.maxDistance = 0.1;
-            controls.rotateSpeed = -0.4;
+            controls.rotateSpeed = -0.4; // Inverted for intuitive touch
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minPolarAngle = 0.05;
@@ -1217,57 +1217,60 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
         }
         
-        // FIXED: Proper arrow key navigation with increased sensitivity
         function setupKeyboardControls() {
-            document.addEventListener('keydown', (event) => {
-                const tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
-                if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+            const keysDown = {};
 
-                const rotSpeed = 0.2; // Increased for better response
-                const zoomSpeed = 2;
-                let handled = false;
+            const isTyping = () => {
+                const a = document.activeElement;
+                if (!a) return false;
+                const tag = a.tagName.toLowerCase();
+                return tag === 'input' || tag === 'select' || tag === 'textarea' || a.isContentEditable;
+            };
 
-                switch(event.key) {
-                    case 'ArrowLeft':
-                        controls.rotateLeft(rotSpeed);
-                        handled = true;
-                        break;
-                    case 'ArrowRight':
-                        controls.rotateLeft(-rotSpeed);
-                        handled = true;
-                        break;
-                    case 'ArrowUp':
-                        controls.rotateUp(rotSpeed);
-                        handled = true;
-                        break;
-                    case 'ArrowDown':
-                        controls.rotateUp(-rotSpeed);
-                        handled = true;
-                        break;
-                    case '+':
-                    case '=':
-                        camera.fov = Math.max(15, camera.fov - zoomSpeed);
-                        camera.updateProjectionMatrix();
-                        handled = true;
-                        break;
-                    case '-':
-                    case '_':
-                        camera.fov = Math.min(120, camera.fov + zoomSpeed);
-                        camera.updateProjectionMatrix();
-                        handled = true;
-                        break;
-                    case 'h':
-                    case 'H':
-                        togglePanel();
-                        handled = true;
-                        break;
+            document.addEventListener('keydown', (e) => {
+                if (isTyping()) return;
+                const c = e.code;
+                if (c === 'ArrowLeft' || c === 'ArrowRight' || c === 'ArrowUp' || c === 'ArrowDown' || c === 'Equal' || c === 'Minus') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    keysDown[c] = true;
+                }
+                if (e.key === 'h' || e.key === 'H') {
+                    e.preventDefault();
+                    togglePanel();
+                }
+            }, true);
+
+            document.addEventListener('keyup', (e) => {
+                keysDown[e.code] = false;
+            }, true);
+
+            const stepBase = 0.08;   // radians per second baseline
+            const zoomStep = 90 / 60; // ~1.5 FOV per frame at 60fps
+
+            function tickKeys() {
+                let moved = false;
+
+                if (keysDown['ArrowLeft'])  { controls.rotateLeft( stepBase / 6 ); moved = true; }
+                if (keysDown['ArrowRight']) { controls.rotateLeft(-stepBase / 6 ); moved = true; }
+                if (keysDown['ArrowUp'])    { controls.rotateUp(   stepBase / 6 ); moved = true; }
+                if (keysDown['ArrowDown'])  { controls.rotateUp(  -stepBase / 6 ); moved = true; }
+
+                if (keysDown['Equal']) { // + (also on = key)
+                    camera.fov = Math.max(15, camera.fov - zoomStep);
+                    camera.updateProjectionMatrix();
+                    moved = true;
+                }
+                if (keysDown['Minus']) { // -
+                    camera.fov = Math.min(120, camera.fov + zoomStep);
+                    camera.updateProjectionMatrix();
+                    moved = true;
                 }
 
-                if (handled) {
-                    event.preventDefault();
-                    controls.update();
-                }
-            });
+                if (moved) controls.update();
+                requestAnimationFrame(tickKeys);
+            }
+            tickKeys();
         }
         
         function onTouchStart(event) {
@@ -1492,7 +1495,7 @@
                 document.getElementById('desktop-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
                 document.getElementById('desktop-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
 
-                // Update mobile info (if on mobile)
+                // Update mobile info
                 if (document.getElementById('mobile-star-count')) {
                     document.getElementById('mobile-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
                     document.getElementById('mobile-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
@@ -1593,6 +1596,7 @@
             const slider = document.getElementById(sliderId);
             if (slider) {
                 slider.value = value;
+                // Trigger the input event to update visuals
                 slider.dispatchEvent(new Event('input'));
             }
         }
@@ -1604,19 +1608,12 @@
             info.classList.toggle('collapsed');
         }
 
-        // FIXED: Mobile compass movement
         function toggleMobilePanel() {
             if (window.innerWidth <= 768) {
                 const panel = document.getElementById('control-panel');
                 const compass = document.getElementById('compass-container');
                 panel.classList.toggle('mobile-collapsed');
-
-                // Use CSS class instead of direct style manipulation
-                if (panel.classList.contains('mobile-collapsed')) {
-                    compass.classList.add('mobile-down');
-                } else {
-                    compass.classList.remove('mobile-down');
-                }
+                compass.classList.toggle('mobile-down', panel.classList.contains('mobile-collapsed'));
             }
         }
         
@@ -1636,54 +1633,50 @@
             document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
         }
 
-        // FIXED: High-resolution screenshot using current viewport aspect ratio
+        // FIXED: High-resolution screenshot using current renderer and viewport
         function takeScreenshot() {
-            // Hide UI elements
-            const panel = document.getElementById('control-panel');
-            const info = document.getElementById('info-display');
-            const compass = document.getElementById('compass-container');
-            
-            panel.style.display = 'none';
-            info.style.display = 'none';
-            compass.style.display = 'none';
+          const panel = document.getElementById('control-panel');
+          const info = document.getElementById('info-display');
+          const compass = document.getElementById('compass-container');
 
-            // Calculate high-resolution dimensions maintaining current aspect ratio
-            const currentAspect = window.innerWidth / window.innerHeight;
-            const targetHeight = 2880; // 4K height
-            const targetWidth = Math.round(targetHeight * currentAspect);
+          const prevPanel = panel.style.display;
+          const prevInfo = info ? info.style.display : '';
+          const prevCompass = compass.style.display;
 
-            // Temporarily resize renderer
-            const originalWidth = renderer.domElement.width;
-            const originalHeight = renderer.domElement.height;
-            const originalAspect = camera.aspect;
+          panel.style.display = 'none';
+          if (info) info.style.display = 'none';
+          compass.style.display = 'none';
 
-            renderer.setSize(targetWidth, targetHeight);
-            camera.aspect = targetWidth / targetHeight;
-            camera.updateProjectionMatrix();
+          const oldPR = renderer.getPixelRatio();
+          const oldSize = { w: renderer.getSize(new THREE.Vector2()).x, h: renderer.getSize(new THREE.Vector2()).y };
+          const oldAspect = camera.aspect;
 
-            // Render high-res frame
-            renderer.render(scene, camera);
+          // Use current viewport, but render sharper
+          const scale = Math.min(3, Math.max(2, window.devicePixelRatio)); // 2–3x for quality without crashing
+          renderer.setPixelRatio(scale);
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
 
-            // Capture as JPG
-            const imgData = renderer.domElement.toDataURL('image/jpeg', 0.95);
+          renderer.render(scene, camera);
+          const data = renderer.domElement.toDataURL('image/jpeg', 0.95);
 
-            // Restore original size
-            renderer.setSize(originalWidth, originalHeight);
-            camera.aspect = originalAspect;
-            camera.updateProjectionMatrix();
+          // restore
+          renderer.setPixelRatio(oldPR);
+          renderer.setSize(oldSize.w, oldSize.h);
+          camera.aspect = oldAspect;
+          camera.updateProjectionMatrix();
 
-            // Restore UI
-            panel.style.display = '';
-            info.style.display = '';
-            compass.style.display = '';
+          panel.style.display = prevPanel;
+          if (info) info.style.display = prevInfo;
+          compass.style.display = prevCompass;
 
-            // Download
-            const link = document.createElement('a');
-            link.href = imgData;
-            link.download = `astro-map-${Date.now()}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+          const a = document.createElement('a');
+          a.href = data;
+          a.download = `astro-map-${Date.now()}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
         }
         
         function animate() {
