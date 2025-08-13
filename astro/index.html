@@ -81,11 +81,38 @@
             width: 200px;
             height: 200px;
             pointer-events: none;
-            transition: opacity 0.5s ease, bottom 0.3s ease;
+            transition: opacity 0.5s ease;
             z-index: 100;
         }
 
-        #compass {
+        #compass-container-mobile {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            #compass-container {
+                display: none !important;
+            }
+
+            #compass-container-mobile {
+                display: block;
+            }
+
+            #compass-container-mobile.compass-hidden {
+                opacity: 0;
+            }
+        }
+
+        #compass, #compass-mobile {
             width: 100%;
             height: 100%;
             position: relative;
@@ -275,10 +302,6 @@
                 transform: translateY(calc(100% - 60px));
             }
 
-            #control-panel.mobile-collapsed + #compass-container {
-                bottom: 80px;
-            }
-
             #info-display {
                 display: none;
             }
@@ -307,12 +330,6 @@
                 background: rgba(255, 215, 0, 0.5);
                 border-radius: 2px;
                 cursor: pointer;
-            }
-
-            #compass-container {
-                width: 140px;
-                height: 140px;
-                bottom: calc(45vh + 20px);
             }
         }
 
@@ -879,6 +896,22 @@
             <div class="compass-pointer"></div>
         </div>
     </div>
+
+    <div id="compass-container-mobile">
+        <div id="compass-mobile">
+            <div class="compass-outer-ring"></div>
+            <div class="compass-base">
+                <div class="compass-rotator" id="compass-rotator-mobile">
+                    <div class="compass-rose"></div>
+                    <div class="compass-label n">N</div>
+                    <div class="compass-label e">E</div>
+                    <div class="compass-label s">S</div>
+                    <div class="compass-label w">W</div>
+                </div>
+            </div>
+            <div class="compass-pointer"></div>
+        </div>
+    </div>
     
     <div id="control-panel">
         <div class="mobile-handle" onclick="toggleMobilePanel()"></div>
@@ -1169,11 +1202,7 @@
         function setupKeyboardControls() {
             document.addEventListener('keydown', (event) => {
                 if (event.key.toLowerCase() === 'h') {
-                    if (window.innerWidth <= 768) {
-                        toggleMobilePanel();
-                    } else {
-                        togglePanel();
-                    }
+                    togglePanel();
                 }
             });
         }
@@ -1203,7 +1232,8 @@
         function updateCompass() {
             if (!currentSettings.showCompass) return;
             const rotator = document.getElementById('compass-rotator');
-            if (!rotator || !controls) return;
+            const rotatorMobile = document.getElementById('compass-rotator-mobile');
+            if (!controls) return;
 
             const curAz = controls.getAzimuthalAngle();
             let delta = curAz - prevAzimuth;
@@ -1211,7 +1241,8 @@
             compassAccumDeg += -delta * (180 / Math.PI);
             prevAzimuth = curAz;
 
-            rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
+            if (rotator) rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
+            if (rotatorMobile) rotatorMobile.style.transform = `rotate(${compassAccumDeg}deg)`;
         }
 
         function setupSliderListeners() {
@@ -1505,17 +1536,30 @@
         }
         
         function togglePanel() {
-            if (window.innerWidth > 768) {
-                const panel = document.getElementById('control-panel');
-                const info = document.getElementById('info-display');
-                panel.classList.toggle('collapsed');
-                info.classList.toggle('collapsed');
-            }
+            const panel = document.getElementById('control-panel');
+            const info = document.getElementById('info-display');
+            panel.classList.toggle('collapsed');
+            info.classList.toggle('collapsed');
         }
 
         function toggleMobilePanel() {
             if (window.innerWidth <= 768) {
-                document.getElementById('control-panel').classList.toggle('mobile-collapsed');
+                const panel = document.getElementById('control-panel');
+                panel.classList.toggle('mobile-collapsed');
+                updateMobileCompassVisibility();
+            }
+        }
+
+        function updateMobileCompassVisibility() {
+            const panel = document.getElementById('control-panel');
+            const compassMobile = document.getElementById('compass-container-mobile');
+            
+            if (window.innerWidth <= 768 && compassMobile) {
+                if (panel.classList.contains('mobile-collapsed') && currentSettings.showCompass) {
+                    compassMobile.classList.remove('compass-hidden');
+                } else {
+                    compassMobile.classList.add('compass-hidden');
+                }
             }
         }
         
@@ -1534,6 +1578,7 @@
             toggle.classList.toggle('active');
             currentSettings.showCompass = toggle.classList.contains('active');
             document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
+            updateMobileCompassVisibility();
             updateURL();
         }
 
@@ -1541,13 +1586,16 @@
             const panel = document.getElementById('control-panel');
             const info = document.getElementById('info-display');
             const compass = document.getElementById('compass-container');
+            const compassMobile = document.getElementById('compass-container-mobile');
             const originalPanelDisplay = panel.style.display;
             const originalInfoDisplay = info.style.display;
             const originalCompassDisplay = compass.style.display;
+            const originalCompassMobileDisplay = compassMobile.style.display;
 
             panel.style.display = 'none';
             info.style.display = 'none';
             compass.style.display = 'none';
+            compassMobile.style.display = 'none';
 
             renderer.render(scene, camera);
 
@@ -1556,6 +1604,7 @@
             panel.style.display = originalPanelDisplay;
             info.style.display = originalInfoDisplay;
             compass.style.display = originalCompassDisplay;
+            compassMobile.style.display = originalCompassMobileDisplay;
 
             const link = document.createElement('a');
             link.href = imgData;
@@ -1578,6 +1627,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            updateMobileCompassVisibility();
         });
         
         window.addEventListener('load', () => {
@@ -1594,8 +1644,7 @@
             }
             
             initScene();
-            toggleCompass();
-            toggleTwinkle();
+            updateMobileCompassVisibility();
             updateSky();
             animate();
         });
