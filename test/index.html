@@ -65,9 +65,9 @@
             #control-panel { 
                 bottom: 0; 
                 top: auto; 
-                left: 0; 
-                transform: none; 
-                right: 0; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                right: auto; 
                 width: 100vw; 
                 height: 45vh; 
                 max-height: 45vh; 
@@ -77,20 +77,23 @@
             #control-panel.mobile-collapsed { 
                 transform: translateX(-50%) translateY(calc(100% - 60px)); 
                 border-radius: 0; 
-                border-bottom: 0; 
+                background: transparent;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                border: none;
+                box-shadow: none;
             }
             #control-panel.mobile-collapsed .panel-header { 
                 padding: 12px 15px; 
                 background: var(--panel-bg);
                 border: 2px solid rgba(255, 215, 0, 0.3);
                 border-bottom: none;
-                border-radius: 20px 20px 0 0;
+                border-radius: 0;
                 backdrop-filter: blur(25px);
                 -webkit-backdrop-filter: blur(25px);
                 box-shadow: 0 -10px 30px rgba(255,215,0,0.2);
             }
             #control-panel.mobile-collapsed .panel-header h2 { font-size: 18px; }
-            #control-panel.mobile-collapsed .panel-content { display: none; }
             #info-display { display: none; }
             .mobile-info { display: block; margin-top: 24px; padding: 20px; background: rgba(6,16,36,0.6); border-radius: 16px; border: 2px solid rgba(255,215,0,0.2); }
             .desktop-info { display: none; }
@@ -401,7 +404,7 @@
         let horizonMesh, earthMesh, sunGlowMesh;
         let currentSettings = { magCutoff: 7.5, starScale: 0.1, brightness: 1.8, glowIntensity: 0.85, colorTemp: 0.4, twinkle: true, showCompass: true };
         let animationTime = 0, touchStartDistance = 0, prevAzimuth = 0, compassAccumDeg = 0;
-        let starsData = null;
+        let starsData = null; // Stored raw star data from server
 
         function initScene() {
             scene = new THREE.Scene();
@@ -573,6 +576,23 @@
             });
         }
 
+        function horizontalToCartesian(altitude, azimuth, radius = 100) {
+            const altRad = altitude * Math.PI / 180;
+            const azRad = (90 - azimuth) * Math.PI / 180;
+            return { x: radius * Math.cos(altRad) * Math.cos(azRad), y: radius * Math.sin(altRad), z: -radius * Math.cos(altRad) * Math.sin(azRad) };
+        }
+        
+        function bvToColor(bv, tempScale) {
+            if (bv === null || bv === undefined || tempScale === 0) return [1, 1, 1];
+            bv = Math.max(-0.4, Math.min(2.0, bv)) * tempScale;
+            let r, g, b;
+            if (bv < 0.0) { r=0.6+bv*0.7; g=0.7+bv*0.5; b=1.0; }
+            else if (bv < 0.4) { r=0.85+bv*0.375; g=0.85+bv*0.125; b=1.0-bv*0.875; }
+            else if (bv < 1.6) { r=1.0; g=0.9-(bv-0.4)*0.5; b=0.8-(bv-0.4)*0.5; }
+            else { r=1.0; g=0.4-(bv-1.6)*0.25; b=0.3-(bv-1.6)*0.25; }
+            return [r, g, b];
+        }
+        
         function sliderToActual(value, setting) {
             const val = parseFloat(value);
             switch(setting) {
@@ -598,23 +618,21 @@
             return valid;
         }
 
-        async function createStarField() {
-            if (!validateInputs()) return;
-            const updateButton = document.getElementById('update-button');
-            updateButton.disabled = true;
+        async function fetchStarData() {
+            if (!validateInputs()) return false;
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            const dateStr = document.getElementById('date-input').value;
+            const timeStr = document.getElementById('time-input').value;
+            const timezone = document.getElementById('timezone-select').value;
             
             try {
-                const lat = parseFloat(document.getElementById('latitude').value);
-                const lon = parseFloat(document.getElementById('longitude').value);
-                const dateStr = document.getElementById('date-input').value;
-                const timeStr = document.getElementById('time-input').value;
-                const timezone = document.getElementById('timezone-select').value;
-                
                 const response = await fetch(`${URL_CONFIG.API_BASE}/calculate-stars`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        lat, lon, 
+                        lat, 
+                        lon, 
                         date: dateStr,
                         time: timeStr,
                         timezone,
@@ -627,49 +645,7 @@
                 const data = await response.json();
                 starsData = data.stars;
                 
-                if (starsMesh) { 
-                    scene.remove(starsMesh); 
-                    starsMesh.geometry.dispose(); 
-                    starsMesh.material.dispose(); 
-                }
-                
-                const positions = [], colors = [], sizes = [], twinklePhases = [];
-                
-                starsData.forEach((star) => {
-                    const { x, y, z, color, size, twinklePhase } = star;
-                    positions.push(x, y, z);
-                    colors.push(...color);
-                    sizes.push(size * currentSettings.starScale);
-                    twinklePhases.push(twinklePhase);
-                });
-                
-                const geometry = new THREE.BufferGeometry();
-                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-                geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
-                geometry.setAttribute('twinklePhase', new THREE.Float32BufferAttribute(twinklePhases, 1));
-                
-                const starTexture = createStarTexture(currentSettings.glowIntensity);
-                const material = new THREE.ShaderMaterial({
-                    uniforms: { 
-                        pointTexture: { value: starTexture }, 
-                        brightness: { value: currentSettings.brightness }, 
-                        time: { value: 0 }, 
-                        twinkleEnabled: { value: currentSettings.twinkle ? 1.0 : 0.0 } 
-                    },
-                    vertexShader: `attribute float size; attribute float twinklePhase; varying vec3 vColor; uniform float time; uniform float twinkleEnabled; void main(){ vColor=color; float t=1.0; if (twinkleEnabled>0.5){ t=0.85+0.15*sin(time*0.8+twinklePhase); if(size<1.2){ t*=0.9+0.1*sin(time*1.2+twinklePhase*1.5); } } vec4 mvPosition=modelViewMatrix*vec4(position,1.0); gl_PointSize=size*t*400.0/length(mvPosition.xyz); gl_Position=projectionMatrix*mvPosition; }`,
-                    fragmentShader: `uniform sampler2D pointTexture; uniform float brightness; varying vec3 vColor; void main(){ vec4 tex=texture2D(pointTexture, gl_PointCoord); gl_FragColor=vec4(vColor*brightness,1.0)*tex; }`,
-                    blending: THREE.AdditiveBlending, 
-                    depthTest: true, 
-                    depthWrite: false, 
-                    transparent: true, 
-                    vertexColors: true
-                });
-                
-                starsMesh = new THREE.Points(geometry, material);
-                starsMesh.renderOrder = 2; 
-                scene.add(starsMesh);
-                
+                // Update display info
                 document.getElementById('desktop-star-count').textContent = `Stars visible: ${data.visibleCount.toLocaleString()}`;
                 document.getElementById('desktop-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
                 document.getElementById('desktop-time-info').textContent = `Time: ${data.formattedTime}`;
@@ -681,12 +657,75 @@
                     document.getElementById('mobile-time-info').textContent = `Time: ${data.formattedTime}`;
                 }
                 
+                return true;
             } catch (error) {
-                console.error('Error creating star field:', error);
+                console.error('Error fetching star data:', error);
                 alert('Failed to load star data. Please try again.');
-            } finally {
-                updateButton.disabled = false;
+                return false;
             }
+        }
+
+        function createStarMesh() {
+            if (!starsData) return;
+            
+            if (starsMesh) {
+                scene.remove(starsMesh);
+                starsMesh.geometry.dispose();
+                starsMesh.material.dispose();
+            }
+            
+            const positions = [];
+            const colors = [];
+            const sizes = [];
+            const twinklePhases = [];
+            
+            starsData.forEach(star => {
+                positions.push(star.x, star.y, star.z);
+                const color = bvToColor(star.bv, currentSettings.colorTemp);
+                colors.push(...color);
+                const brightnessFactor = Math.max(0, currentSettings.magCutoff - star.vmag);
+                const size = 0.5 + Math.pow(brightnessFactor, 1.8) * currentSettings.starScale;
+                sizes.push(size);
+                twinklePhases.push(star.twinklePhase);
+            });
+            
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+            geometry.setAttribute('twinklePhase', new THREE.Float32BufferAttribute(twinklePhases, 1));
+            
+            const starTexture = createStarTexture(currentSettings.glowIntensity);
+            const material = new THREE.ShaderMaterial({
+                uniforms: { 
+                    pointTexture: { value: starTexture }, 
+                    brightness: { value: currentSettings.brightness }, 
+                    time: { value: 0 }, 
+                    twinkleEnabled: { value: currentSettings.twinkle ? 1.0 : 0.0 } 
+                },
+                vertexShader: `attribute float size; attribute float twinklePhase; varying vec3 vColor; uniform float time; uniform float twinkleEnabled; void main(){ vColor=color; float t=1.0; if (twinkleEnabled>0.5){ t=0.85+0.15*sin(time*0.8+twinklePhase); if(size<1.2){ t*=0.9+0.1*sin(time*1.2+twinklePhase*1.5); } } vec4 mvPosition=modelViewMatrix*vec4(position,1.0); gl_PointSize=size*t*400.0/length(mvPosition.xyz); gl_Position=projectionMatrix*mvPosition; }`,
+                fragmentShader: `uniform sampler2D pointTexture; uniform float brightness; varying vec3 vColor; void main(){ vec4 tex=texture2D(pointTexture, gl_PointCoord); gl_FragColor=vec4(vColor*brightness,1.0)*tex; }`,
+                blending: THREE.AdditiveBlending, 
+                depthTest: true, 
+                depthWrite: false, 
+                transparent: true, 
+                vertexColors: true
+            });
+            
+            starsMesh = new THREE.Points(geometry, material);
+            starsMesh.renderOrder = 2;
+            scene.add(starsMesh);
+        }
+
+        async function createStarField() {
+            const updateButton = document.getElementById('update-button');
+            updateButton.disabled = true;
+            
+            const success = await fetchStarData();
+            if (success) {
+                createStarMesh();
+            }
+            updateButton.disabled = false;
         }
 
         function createStarTexture(glowIntensity) {
@@ -706,19 +745,27 @@
 
         function updateVisualSetting(setting, value) {
             currentSettings[setting] = sliderToActual(value, setting);
-            if (starsMesh) {
-                if (setting === 'brightness' && starsMesh.material.uniforms.brightness) {
+            if (setting === 'magCutoff') {
+                createStarField(); // Requires refetch from server
+            } else if (setting === 'brightness') {
+                if (starsMesh && starsMesh.material.uniforms.brightness) {
                     starsMesh.material.uniforms.brightness.value = currentSettings.brightness;
-                } else {
-                    createStarField();
+                }
+            } else if (setting === 'twinkle') {
+                if (starsMesh && starsMesh.material.uniforms.twinkleEnabled) {
+                    starsMesh.material.uniforms.twinkleEnabled.value = currentSettings.twinkle ? 1.0 : 0.0;
                 }
             } else {
-                createStarField();
+                // For starScale, glowIntensity, colorTemp: recreate mesh without refetch
+                createStarMesh();
             }
             updateURL();
         }
 
-        function updateSkyAndURL() { updateSky(); updateURL(); }
+        function updateSkyAndURL() { 
+            updateSky(); 
+            updateURL(); 
+        }
         
         function updateSky() {
             currentSettings.magCutoff = sliderToActual(document.getElementById('mag-cutoff').value, 'magCutoff');
@@ -794,7 +841,7 @@
             const toggle = document.getElementById('twinkle-toggle');
             toggle.classList.toggle('active');
             currentSettings.twinkle = toggle.classList.contains('active');
-            if (starsMesh) starsMesh.material.uniforms.twinkleEnabled.value = currentSettings.twinkle ? 1.0 : 0.0;
+            updateVisualSetting('twinkle', currentSettings.twinkle ? 1 : 0);
             updateURL();
         }
         
