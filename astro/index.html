@@ -47,10 +47,10 @@
         .compass-rotator { position: absolute; inset: 0; will-change: transform; }
         .compass-rose { width: 100%; height: 100%; position: absolute; opacity: 0.8; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='rgba(255,215,0,0.55)' stroke-width='1.5'%3E%3Ccircle cx='100' cy='100' r='80' stroke-dasharray='4,6'/%3E%3C/g%3E%3C/svg%3E"); background-size: contain; background-repeat: no-repeat; background-position: center; }
         .compass-label { position: absolute; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--accent-gold); letter-spacing: 2px; text-shadow: 0 0 10px var(--accent-gold), 0 0 20px rgba(255, 215, 0, 0.5); transform: rotate(0deg) !important; }
-        .compass-label.n { top: 18px; left: 50%; transform: translateX(-50%) !important; }
-        .compass-label.s { bottom: 18px; left: 50%; transform: translateX(-50%) !important; }
-        .compass-label.e { top: 50%; right: 18px; transform: translateY(-50%) !important; }
-        .compass-label.w { top: 50%; left: 18px; transform: translateY(-50%) !important; }
+        .compass-label.n { top: 10px; left: 50%; transform: translateX(-50%) !important; }
+        .compass-label.s { bottom: 10px; left: 50%; transform: translateX(-50%) !important; }
+        .compass-label.e { top: 50%; right: 10px; transform: translateY(-50%) !important; }
+        .compass-label.w { top: 50%; left: 10px; transform: translateY(-50%) !important; }
         .compass-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 28px solid var(--accent-gold); filter: drop-shadow(0 0 15px var(--accent-gold)); }
         @keyframes slowRotate { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
         @keyframes pulse { 0%,100%{opacity:0.6; transform:translate(-50%,-50%) scale(1);} 50%{opacity:1; transform:translate(-50%,-50%) scale(1.1);} }
@@ -94,7 +94,7 @@
         .city-search-group { margin-bottom: 24px; }
         .city-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
         .city-input-row input { flex: 3; }
-        .city-input-row button { flex: 1; margin-top: 0; padding: 16px 18px; font-size: 14px; }
+        .city-input-row button { flex: 1; margin-top: 0; padding: 16px 10px; font-size: 14px; }
         .city-results { display: none; background: rgba(6,16,36,0.8); border: 2px solid rgba(255,215,0,0.3); border-radius: 14px; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
         .city-results.show { display: block; }
         .city-result-item { padding: 10px; margin: 5px 0; background: rgba(8,24,52,0.6); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
