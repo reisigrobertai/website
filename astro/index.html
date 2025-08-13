@@ -33,9 +33,9 @@
         input[type="number"] { -moz-appearance: textfield; }
         
         /* Desktop compass */
-        .compass-container { position: fixed; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; pointer-events: none; transition: opacity 0.3s ease; display: none; z-index: 100; bottom: 30px; }
+        .compass-container { position: fixed; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; pointer-events: none; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); opacity: 0; visibility: hidden; z-index: 100; bottom: 30px; }
         /* Mobile compass */
-        .compass-container-mobile { position: fixed; top: 10px; right: 10px; width: 100px; height: 100px; pointer-events: none; transition: opacity 0.3s ease; display: none; z-index: 100; }
+        .compass-container-mobile { position: fixed; top: 10px; right: 10px; width: 100px; height: 100px; pointer-events: none; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); opacity: 0; visibility: hidden; z-index: 100; }
         .compass-container-mobile .compass { transform: scale(0.5); transform-origin: top right; }
         .compass-container-mobile .compass-label { font-size: 10px; }
         .compass-container-mobile .compass-label.n { top: 18px; }
@@ -740,25 +740,31 @@
             updateURL();
         }
 
-        function updateCompassVisibilityLayout() {
-            const compass = document.getElementById('compass-container');
-            const compassMobile = document.getElementById('compass-container-mobile');
-            
-            if (!currentSettings.showCompass) {
-                compass.style.display = 'none';
-                compassMobile.style.display = 'none';
-                return;
-            }
-            
-            const isMobile = window.innerWidth <= 768;
-            if (isMobile) {
-                compass.style.display = 'none';
-                compassMobile.style.display = 'block';
-            } else {
-                compass.style.display = 'block';
-                compassMobile.style.display = 'none';
-            }
-        }
+function updateCompassVisibilityLayout() {
+    const compass = document.getElementById('compass-container');
+    const compassMobile = document.getElementById('compass-container-mobile');
+    
+    if (!currentSettings.showCompass) {
+        compass.style.opacity = '0';
+        compass.style.visibility = 'hidden';
+        compassMobile.style.opacity = '0';
+        compassMobile.style.visibility = 'hidden';
+        return;
+    }
+    
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        compass.style.opacity = '0';
+        compass.style.visibility = 'hidden';
+        compassMobile.style.opacity = '1';
+        compassMobile.style.visibility = 'visible';
+    } else {
+        compass.style.opacity = '1';
+        compass.style.visibility = 'visible';
+        compassMobile.style.opacity = '0';
+        compassMobile.style.visibility = 'hidden';
+    }
+}
 
         function takeScreenshot() {
             const panel = document.getElementById('control-panel');
