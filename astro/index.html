@@ -32,11 +32,7 @@
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
         
-        .compass-container { position: fixed; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; pointer-events: none; transition: opacity 0.3s ease; display: none; z-index: 100; }
-        @media (max-width: 768px) {
-            .compass-container { top: 10px; left: auto; right: 10px; transform: none; width: 100px; height: 100px; }
-            .compass { transform: scale(0.5); transform-origin: top right; }
-        }
+        .compass-container { position: fixed; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; pointer-events: none; transition: all 0.3s ease; display: none; z-index: 100; }
         .compass { width: 100%; height: 100%; position: relative; filter: drop-shadow(0 12px 30px rgba(255, 215, 0, 0.2)); }
         .compass-outer-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 0deg, var(--accent-gold) 0deg, transparent 2deg, transparent 8deg, var(--accent-gold) 10deg, transparent 12deg, transparent 18deg, var(--accent-gold) 20deg, transparent 22deg, transparent 28deg, var(--accent-gold) 30deg, transparent 32deg, transparent 358deg, var(--accent-gold) 360deg); opacity: 0.35; animation: slowRotate 120s linear infinite; }
         .compass-base { position: absolute; inset: 8px; border-radius: 50%; background: var(--panel-bg); border: 2px solid rgba(255, 215, 0, 0.3); box-shadow: inset 0 0 30px rgba(135, 206, 250, 0.15), 0 0 0 1px rgba(255, 215, 0, 0.2), 0 0 50px rgba(135, 206, 250, 0.1); }
@@ -57,15 +53,16 @@
         #info-display { position: fixed; bottom: 20px; right: 20px; background: var(--panel-bg); padding: 20px 24px; border-radius: 18px; font-size: 13px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 2px solid rgba(255,215,0,0.3); box-shadow: 0 12px 40px rgba(10,30,70,0.4), 0 0 80px rgba(135,206,250,0.2); transition: all 0.5s cubic-bezier(0.4,0,0.2,1); z-index: 999; }
         
         @media (max-width: 768px) {
-            #control-panel { bottom: 0; top: auto; left: 50%; transform: translateX(-50%); right: auto; width: 100vw; height: 45vh; max-height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; }
+            #control-panel { bottom: 0; top: auto; left: 50%; transform: translateX(-50%); right: auto; width: 100vw; max-width: 100vw; height: 45vh; max-height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; }
             #control-panel.mobile-collapsed { transform: translateX(-50%) translateY(calc(100% - 60px)); }
+            #control-panel.mobile-collapsed .panel-header { padding: 15px 20px; }
+            #control-panel.mobile-collapsed .panel-header h2 { font-size: 20px; white-space: nowrap; }
             #info-display { display: none; }
             .mobile-info { display: block; margin-top: 24px; padding: 20px; background: rgba(6,16,36,0.6); border-radius: 16px; border: 2px solid rgba(255,215,0,0.2); }
             .desktop-info { display: none; }
             .mobile-handle { display: block; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background: rgba(255,215,0,0.5); border-radius: 2px; cursor: pointer; }
-            .compass-container { bottom: auto; }
-            #control-panel.mobile-collapsed .panel-header h2 { white-space: nowrap; font-size: 20px; }
-            #control-panel.mobile-collapsed .panel-header { padding: 15px 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .compass-container { top: 20px; right: 20px; left: auto; bottom: auto; width: 100px; height: 100px; transform: none; }
+            .compass { transform: scale(0.5); transform-origin: top right; }
         }
         @media (min-width: 769px) {
             .mobile-handle { display: none; }
@@ -88,10 +85,9 @@
         .timezone-select select { -webkit-appearance: none; -moz-appearance: none; appearance: none; scrollbar-width: none; -ms-overflow-style: none; }
         .timezone-select select::-webkit-scrollbar { display: none; }
         
-        .city-search-group { margin-bottom: 24px; }
-        .city-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .city-input-row input { flex: 3; }
-        .city-input-row button { flex: 1; margin-top: 0; padding: 16px 18px; font-size: 14px; }
+        .city-input-row { display: flex; gap: 10px; align-items: center; }
+        .city-input-row input { flex-grow: 1; }
+        .city-input-row button { flex-shrink: 0; margin-top: 0; padding: 16px 18px; font-size: 14px; }
         .city-results { display: none; background: rgba(6,16,36,0.8); border: 2px solid rgba(255,215,0,0.3); border-radius: 14px; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
         .city-results.show { display: block; }
         .city-result-item { padding: 10px; margin: 5px 0; background: rgba(8,24,52,0.6); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
@@ -157,7 +153,6 @@
         </div>
     </div>
     
-    <!-- Single compass (adjusted for mobile) -->
     <div id="compass-container" class="compass-container">
         <div class="compass">
             <div class="compass-outer-ring"></div>
@@ -181,7 +176,7 @@
             <div class="toggle-panel"></div>
         </div>
         <div class="panel-content">
-            <div class="city-search-group control-group">
+            <div class="control-group">
                 <label for="city-input">City Search</label>
                 <div class="city-input-row">
                     <input type="text" id="city-input" placeholder="Enter city name...">
@@ -298,15 +293,17 @@
                 </div>
             </div>
 
-            <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
-            <button id="high-res-button" onclick="navigateToHighRes()">🌟 Full Sky High Resolution Image</button>
+            <div class="mobile-buttons-container">
+                <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
+                <button id="high-res-button" onclick="navigateToHighRes()">🌟 Full Sky High Resolution Image</button>
+            </div>
 
             <div class="mobile-info">
                 <div id="mobile-star-count">Stars visible: 0</div>
                 <div id="mobile-location-info">Location: --</div>
                 <div id="mobile-time-info">Time: --</div>
                 <div class="legal-links">
-                    <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
+                    <a href="#" target="_blank">About</a> | <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
                 </div>
             </div>
         </div>
@@ -317,7 +314,7 @@
         <div id="desktop-location-info">Location: --</div>
         <div id="desktop-time-info">Time: --</div>
         <div class="legal-links">
-            <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
+            <a href="#" target="_blank">About</a> | <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
         </div>
     </div>
     
@@ -353,6 +350,7 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
             document.addEventListener('keydown', (e)=>{ if (e.key && e.key.toLowerCase()==='h') togglePanel(); });
             setupSliderListeners();
+            setupMobileButtonCloning();
             prevAzimuth = controls.getAzimuthalAngle();
             document.getElementById('loading')?.remove();
         }
@@ -478,6 +476,22 @@
             params.set('twinkle', currentSettings.twinkle ? '1' : '0');
             
             window.location.href = URL_CONFIG.HIGH_RES_PAGE + '?' + params.toString();
+        }
+        
+        function setupMobileButtonCloning() {
+            const screenshotBtn = document.getElementById('screenshot-button');
+            const highResBtn = document.getElementById('high-res-button');
+            const mobileContainer = document.querySelector('.mobile-buttons-container');
+
+            if (window.innerWidth > 768) {
+                if (mobileContainer) mobileContainer.style.display = 'none';
+            } else {
+                if (screenshotBtn && highResBtn && mobileContainer) {
+                    mobileContainer.style.display = 'block';
+                    screenshotBtn.style.display = 'none';
+                    highResBtn.style.display = 'none';
+                }
+            }
         }
 
         function setupSliderListeners() {
@@ -714,15 +728,11 @@
         }
 
         function updateCompassVisibilityLayout() {
-            const isMobile = window.innerWidth <= 768;
-            const panel = document.getElementById('control-panel');
-            const minimized = panel.classList.contains('mobile-collapsed');
             const compass = document.getElementById('compass-container');
-            compass.style.display = 'none';
-            if (!currentSettings.showCompass) return;
-            compass.style.display = 'block';
-            if (isMobile && !minimized) {
-                compass.style.display = 'none'; // Hide when panel is open on mobile
+            if (currentSettings.showCompass) {
+                compass.style.display = 'block';
+            } else {
+                compass.style.display = 'none';
             }
         }
 
@@ -730,11 +740,15 @@
             const panel = document.getElementById('control-panel');
             const info = document.getElementById('info-display');
             const compass = document.getElementById('compass-container');
-            const pD = panel.style.display, iD = info.style.display, cD = compass.style.display;
+            const pVisible = !panel.classList.contains('collapsed');
+            const iVisible = !info.classList.contains('collapsed');
+            const cVisible = compass.style.display !== 'none';
             panel.style.display = 'none'; info.style.display = 'none'; compass.style.display = 'none';
             renderer.render(scene, camera);
             const imgData = renderer.domElement.toDataURL('image/jpeg');
-            panel.style.display = pD; info.style.display = iD; compass.style.display = cD;
+            if (pVisible) panel.style.display = '';
+            if (iVisible) info.style.display = '';
+            if (cVisible) compass.style.display = 'block';
             const link = document.createElement('a'); link.href = imgData; link.download = 'astro-map-screenshot.jpg'; link.click();
         }
 
@@ -749,7 +763,13 @@
             renderer.render(scene, camera);
         }
 
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); updateCompassVisibilityLayout(); });
+        window.addEventListener('resize', () => { 
+            camera.aspect = window.innerWidth / window.innerHeight; 
+            camera.updateProjectionMatrix(); 
+            renderer.setSize(window.innerWidth, window.innerHeight); 
+            updateCompassVisibilityLayout();
+            setupMobileButtonCloning();
+        });
 
         window.addEventListener('load', () => {
             const hasParams = loadFromURL();
@@ -764,6 +784,19 @@
                 document.getElementById('loading').innerHTML = '<div class="loading-spinner"></div>Error: Could not load celestial libraries';
                 return;
             }
+            // Move buttons for mobile if needed
+            const panelContent = document.querySelector('.panel-content');
+            const mobileButtons = document.querySelector('.mobile-buttons-container');
+            if (window.innerWidth <= 768) {
+                const mobileInfo = document.querySelector('.mobile-info');
+                panelContent.insertBefore(mobileButtons, mobileInfo);
+            } else {
+                const collapsible = document.querySelector('.collapsible');
+                panelContent.insertBefore(document.getElementById('screenshot-button'), collapsible.nextSibling);
+                panelContent.insertBefore(document.getElementById('high-res-button'), document.getElementById('screenshot-button').nextSibling);
+                if (mobileButtons) mobileButtons.style.display = 'none';
+            }
+            
             initScene();
             updateCompassVisibilityLayout();
             updateSky();
