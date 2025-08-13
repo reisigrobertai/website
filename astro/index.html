@@ -33,6 +33,10 @@
         input[type="number"] { -moz-appearance: textfield; }
         
         .compass-container { position: fixed; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; pointer-events: none; transition: opacity 0.3s ease; display: none; z-index: 100; }
+        @media (max-width: 768px) {
+            .compass-container { top: 10px; left: auto; right: 10px; transform: none; width: 100px; height: 100px; }
+            .compass { transform: scale(0.5); transform-origin: top right; }
+        }
         .compass { width: 100%; height: 100%; position: relative; filter: drop-shadow(0 12px 30px rgba(255, 215, 0, 0.2)); }
         .compass-outer-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 0deg, var(--accent-gold) 0deg, transparent 2deg, transparent 8deg, var(--accent-gold) 10deg, transparent 12deg, transparent 18deg, var(--accent-gold) 20deg, transparent 22deg, transparent 28deg, var(--accent-gold) 30deg, transparent 32deg, transparent 358deg, var(--accent-gold) 360deg); opacity: 0.35; animation: slowRotate 120s linear infinite; }
         .compass-base { position: absolute; inset: 8px; border-radius: 50%; background: var(--panel-bg); border: 2px solid rgba(255, 215, 0, 0.3); box-shadow: inset 0 0 30px rgba(135, 206, 250, 0.15), 0 0 0 1px rgba(255, 215, 0, 0.2), 0 0 50px rgba(135, 206, 250, 0.1); }
@@ -59,14 +63,15 @@
             .mobile-info { display: block; margin-top: 24px; padding: 20px; background: rgba(6,16,36,0.6); border-radius: 16px; border: 2px solid rgba(255,215,0,0.2); }
             .desktop-info { display: none; }
             .mobile-handle { display: block; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background: rgba(255,215,0,0.5); border-radius: 2px; cursor: pointer; }
-            #compass-container-main { bottom: calc(45vh + 20px); }
-            #compass-container-mobile { bottom: 80px; }
+            .compass-container { bottom: auto; }
+            #control-panel.mobile-collapsed .panel-header h2 { white-space: nowrap; font-size: 20px; }
+            #control-panel.mobile-collapsed .panel-header { padding: 15px 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
         @media (min-width: 769px) {
             .mobile-handle { display: none; }
             .mobile-info { display: none; }
             .desktop-info { display: block; }
-            #compass-container-main { bottom: 30px; }
+            .compass-container { bottom: 30px; }
         }
         
         #control-panel.collapsed { width: auto; height: auto; padding: 0; background: transparent; border-color: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
@@ -85,7 +90,8 @@
         
         .city-search-group { margin-bottom: 24px; }
         .city-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .city-input-row input { flex: 1; }
+        .city-input-row input { flex: 3; }
+        .city-input-row button { flex: 1; margin-top: 0; padding: 16px 18px; font-size: 14px; }
         .city-results { display: none; background: rgba(6,16,36,0.8); border: 2px solid rgba(255,215,0,0.3); border-radius: 14px; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
         .city-results.show { display: block; }
         .city-result-item { padding: 10px; margin: 5px 0; background: rgba(8,24,52,0.6); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
@@ -118,7 +124,7 @@
         input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; background: radial-gradient(circle, #fff 0%, var(--accent-gold) 100%); border-radius: 50%; border: 3px solid var(--accent-gold); box-shadow: 0 4px 15px rgba(255,215,0,0.6); }
         .range-value { display: inline-block; margin-left: 14px; font-size: 14px; color: var(--accent-gold); font-weight: 700; min-width: 55px; text-align: right; font-family: 'Playfair Display', serif; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
         button { width: 100%; padding: 18px; background: var(--button-gradient) !important; border: 2px solid var(--accent-gold) !important; border-radius: 16px; color: white !important; font-weight: 700; font-size: 16px; font-family: 'Playfair Display', serif; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease !important; margin-top: 18px; position: relative; overflow: hidden; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3), 0 0 50px rgba(70, 130, 180, 0.2), inset 0 1px 0 rgba(255, 215, 0, 0.3) !important; }
-        button.search-button { margin-top: 0; }
+        button.search-button { margin-top: 0; padding: 16px 18px; font-size: 14px; }
         button::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%); transform: scale(0); transition: transform 0.6s ease; }
         button:hover { transform: translateY(-3px) !important; box-shadow: 0 15px 40px rgba(138, 43, 226, 0.4), 0 0 80px rgba(70, 130, 180, 0.3), inset 0 1px 0 rgba(255, 215, 0, 0.5) !important; }
         button:hover::before { transform: scale(1); }
@@ -151,29 +157,12 @@
         </div>
     </div>
     
-    <!-- Primary compass (desktop and mobile when panel is open) -->
-    <div id="compass-container-main" class="compass-container">
+    <!-- Single compass (adjusted for mobile) -->
+    <div id="compass-container" class="compass-container">
         <div class="compass">
             <div class="compass-outer-ring"></div>
             <div class="compass-base">
-                <div class="compass-rotator" id="compass-rotator-main">
-                    <div class="compass-rose"></div>
-                    <div class="compass-label n">N</div>
-                    <div class="compass-label e">E</div>
-                    <div class="compass-label s">S</div>
-                    <div class="compass-label w">W</div>
-                </div>
-            </div>
-            <div class="compass-pointer"></div>
-        </div>
-    </div>
-    
-    <!-- Secondary compass (mobile only when panel minimized) -->
-    <div id="compass-container-mobile" class="compass-container">
-        <div class="compass">
-            <div class="compass-outer-ring"></div>
-            <div class="compass-base">
-                <div class="compass-rotator" id="compass-rotator-mobile">
+                <div class="compass-rotator" id="compass-rotator">
                     <div class="compass-rose"></div>
                     <div class="compass-label n">N</div>
                     <div class="compass-label e">E</div>
@@ -192,7 +181,7 @@
             <div class="toggle-panel"></div>
         </div>
         <div class="panel-content">
-            <div class="city-search-group">
+            <div class="city-search-group control-group">
                 <label for="city-input">City Search</label>
                 <div class="city-input-row">
                     <input type="text" id="city-input" placeholder="Enter city name...">
@@ -309,6 +298,9 @@
                 </div>
             </div>
 
+            <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
+            <button id="high-res-button" onclick="navigateToHighRes()">🌟 Full Sky High Resolution Image</button>
+
             <div class="mobile-info">
                 <div id="mobile-star-count">Stars visible: 0</div>
                 <div id="mobile-location-info">Location: --</div>
@@ -317,9 +309,6 @@
                     <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
                 </div>
             </div>
-
-            <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
-            <button id="high-res-button" onclick="navigateToHighRes()">🌟 Full Sky High Resolution Image</button>
         </div>
     </div>
     
@@ -421,13 +410,10 @@
             const curAz = controls.getAzimuthalAngle();
             let delta = curAz - prevAzimuth;
             delta = THREE.MathUtils.euclideanModulo(delta + Math.PI, Math.PI * 2) - Math.PI;
-            // Fixed: Reversed the sign to correct compass rotation direction
             compassAccumDeg += delta * (180 / Math.PI);
             prevAzimuth = curAz;
-            const rotMain = document.getElementById('compass-rotator-main');
-            const rotMobile = document.getElementById('compass-rotator-mobile');
-            if (rotMain) rotMain.style.transform = `rotate(${compassAccumDeg}deg)`;
-            if (rotMobile) rotMobile.style.transform = `rotate(${compassAccumDeg}deg)`;
+            const rotator = document.getElementById('compass-rotator');
+            if (rotator) rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
         }
 
         function searchCity() {
@@ -731,29 +717,24 @@
             const isMobile = window.innerWidth <= 768;
             const panel = document.getElementById('control-panel');
             const minimized = panel.classList.contains('mobile-collapsed');
-            const main = document.getElementById('compass-container-main');
-            const mob = document.getElementById('compass-container-mobile');
-            main.style.display = 'none';
-            mob.style.display = 'none';
+            const compass = document.getElementById('compass-container');
+            compass.style.display = 'none';
             if (!currentSettings.showCompass) return;
-            if (isMobile) {
-                if (minimized) mob.style.display = 'block';
-                else main.style.display = 'block';
-            } else {
-                main.style.display = 'block';
+            compass.style.display = 'block';
+            if (isMobile && !minimized) {
+                compass.style.display = 'none'; // Hide when panel is open on mobile
             }
         }
 
         function takeScreenshot() {
             const panel = document.getElementById('control-panel');
             const info = document.getElementById('info-display');
-            const main = document.getElementById('compass-container-main');
-            const mob = document.getElementById('compass-container-mobile');
-            const pD = panel.style.display, iD = info.style.display, mD = main.style.display, moD = mob.style.display;
-            panel.style.display = 'none'; info.style.display = 'none'; main.style.display = 'none'; mob.style.display = 'none';
+            const compass = document.getElementById('compass-container');
+            const pD = panel.style.display, iD = info.style.display, cD = compass.style.display;
+            panel.style.display = 'none'; info.style.display = 'none'; compass.style.display = 'none';
             renderer.render(scene, camera);
             const imgData = renderer.domElement.toDataURL('image/jpeg');
-            panel.style.display = pD; info.style.display = iD; main.style.display = mD; mob.style.display = moD;
+            panel.style.display = pD; info.style.display = iD; compass.style.display = cD;
             const link = document.createElement('a'); link.href = imgData; link.download = 'astro-map-screenshot.jpg'; link.click();
         }
 
