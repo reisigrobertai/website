@@ -32,7 +32,12 @@
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
         
-        .compass-container { position: fixed; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; pointer-events: none; transition: all 0.3s ease; display: none; z-index: 100; }
+        /* Desktop compass */
+        .compass-container { position: fixed; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; pointer-events: none; transition: opacity 0.3s ease; display: none; z-index: 100; bottom: 30px; }
+        /* Mobile compass */
+        .compass-container-mobile { position: fixed; top: 10px; right: 10px; width: 100px; height: 100px; pointer-events: none; transition: opacity 0.3s ease; display: none; z-index: 100; }
+        .compass-container-mobile .compass { transform: scale(0.5); transform-origin: top right; }
+        
         .compass { width: 100%; height: 100%; position: relative; filter: drop-shadow(0 12px 30px rgba(255, 215, 0, 0.2)); }
         .compass-outer-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 0deg, var(--accent-gold) 0deg, transparent 2deg, transparent 8deg, var(--accent-gold) 10deg, transparent 12deg, transparent 18deg, var(--accent-gold) 20deg, transparent 22deg, transparent 28deg, var(--accent-gold) 30deg, transparent 32deg, transparent 358deg, var(--accent-gold) 360deg); opacity: 0.35; animation: slowRotate 120s linear infinite; }
         .compass-base { position: absolute; inset: 8px; border-radius: 50%; background: var(--panel-bg); border: 2px solid rgba(255, 215, 0, 0.3); box-shadow: inset 0 0 30px rgba(135, 206, 250, 0.15), 0 0 0 1px rgba(255, 215, 0, 0.2), 0 0 50px rgba(135, 206, 250, 0.1); }
@@ -53,31 +58,31 @@
         #info-display { position: fixed; bottom: 20px; right: 20px; background: var(--panel-bg); padding: 20px 24px; border-radius: 18px; font-size: 13px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 2px solid rgba(255,215,0,0.3); box-shadow: 0 12px 40px rgba(10,30,70,0.4), 0 0 80px rgba(135,206,250,0.2); transition: all 0.5s cubic-bezier(0.4,0,0.2,1); z-index: 999; }
         
         @media (max-width: 768px) {
-            #control-panel { bottom: 0; top: auto; left: 50%; transform: translateX(-50%); right: auto; width: 100vw; max-width: 100vw; height: 45vh; max-height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; }
+            #control-panel { bottom: 0; top: auto; left: 50%; transform: translateX(-50%); right: auto; width: 100vw; height: 45vh; max-height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; }
             #control-panel.mobile-collapsed { transform: translateX(-50%) translateY(calc(100% - 60px)); }
-            #control-panel.mobile-collapsed .panel-header { padding: 15px 20px; }
-            #control-panel.mobile-collapsed .panel-header h2 { font-size: 20px; white-space: nowrap; }
+            #control-panel.mobile-collapsed .panel-header { padding: 12px 15px; }
+            #control-panel.mobile-collapsed .panel-header h2 { font-size: 18px; }
             #info-display { display: none; }
             .mobile-info { display: block; margin-top: 24px; padding: 20px; background: rgba(6,16,36,0.6); border-radius: 16px; border: 2px solid rgba(255,215,0,0.2); }
             .desktop-info { display: none; }
             .mobile-handle { display: block; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background: rgba(255,215,0,0.5); border-radius: 2px; cursor: pointer; }
-            .compass-container { top: 20px; right: 20px; left: auto; bottom: auto; width: 100px; height: 100px; transform: none; }
-            .compass { transform: scale(0.5); transform-origin: top right; }
+            .compass-container { display: none !important; }
+            .compass-container-mobile { display: block; }
         }
         @media (min-width: 769px) {
             .mobile-handle { display: none; }
             .mobile-info { display: none; }
             .desktop-info { display: block; }
-            .compass-container { bottom: 30px; }
+            .compass-container-mobile { display: none !important; }
         }
         
         #control-panel.collapsed { width: auto; height: auto; padding: 0; background: transparent; border-color: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
         #control-panel.collapsed .panel-content { display: none; }
         #control-panel.collapsed .toggle-panel { display: none; }
         #control-panel.collapsed .panel-header { padding: 15px 20px; background: var(--panel-bg); border: 2px solid rgba(255,215,0,0.3); border-radius: 20px; box-shadow: 0 8px 30px rgba(10,30,70,0.35); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 24px; border-bottom: 1px solid rgba(255,215,0,0.2); cursor: pointer; }
-        .panel-header h2 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; margin: 0; background: linear-gradient(135deg, var(--accent-gold) 0%, var(--primary-blue) 50%, var(--mystical-purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 0 40px rgba(255,215,0,0.5); }
-        .toggle-panel { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(135,206,250,0.2) 100%); display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,215,0,0.3); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 24px; border-bottom: 1px solid rgba(255,215,0,0.2); cursor: pointer; white-space: nowrap; }
+        .panel-header h2 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; margin: 0; background: linear-gradient(135deg, var(--accent-gold) 0%, var(--primary-blue) 50%, var(--mystical-purple) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 0 40px rgba(255,215,0,0.5); white-space: nowrap; }
+        .toggle-panel { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(135,206,250,0.2) 100%); display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,215,0,0.3); flex-shrink: 0; margin-left: 10px; }
         .toggle-panel::before { content: '−'; font-size: 26px; color: var(--accent-gold); font-family: 'Playfair Display', serif; text-shadow: 0 0 10px var(--accent-gold); }
         .panel-content { padding: 24px; overflow-y: auto; max-height: calc(100vh - 140px); scrollbar-width: none; -ms-overflow-style: none; }
         @media (max-width: 768px) { .panel-content { max-height: calc(45vh - 80px); } }
@@ -85,9 +90,10 @@
         .timezone-select select { -webkit-appearance: none; -moz-appearance: none; appearance: none; scrollbar-width: none; -ms-overflow-style: none; }
         .timezone-select select::-webkit-scrollbar { display: none; }
         
-        .city-input-row { display: flex; gap: 10px; align-items: center; }
-        .city-input-row input { flex-grow: 1; }
-        .city-input-row button { flex-shrink: 0; margin-top: 0; padding: 16px 18px; font-size: 14px; }
+        .city-search-group { margin-bottom: 24px; }
+        .city-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .city-input-row input { flex: 3; }
+        .city-input-row button { flex: 1; margin-top: 0; padding: 16px 18px; font-size: 14px; }
         .city-results { display: none; background: rgba(6,16,36,0.8); border: 2px solid rgba(255,215,0,0.3); border-radius: 14px; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
         .city-results.show { display: block; }
         .city-result-item { padding: 10px; margin: 5px 0; background: rgba(8,24,52,0.6); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
@@ -153,11 +159,29 @@
         </div>
     </div>
     
+    <!-- Desktop compass -->
     <div id="compass-container" class="compass-container">
         <div class="compass">
             <div class="compass-outer-ring"></div>
             <div class="compass-base">
                 <div class="compass-rotator" id="compass-rotator">
+                    <div class="compass-rose"></div>
+                    <div class="compass-label n">N</div>
+                    <div class="compass-label e">E</div>
+                    <div class="compass-label s">S</div>
+                    <div class="compass-label w">W</div>
+                </div>
+            </div>
+            <div class="compass-pointer"></div>
+        </div>
+    </div>
+    
+    <!-- Mobile compass -->
+    <div id="compass-container-mobile" class="compass-container-mobile">
+        <div class="compass">
+            <div class="compass-outer-ring"></div>
+            <div class="compass-base">
+                <div class="compass-rotator" id="compass-rotator-mobile">
                     <div class="compass-rose"></div>
                     <div class="compass-label n">N</div>
                     <div class="compass-label e">E</div>
@@ -176,7 +200,7 @@
             <div class="toggle-panel"></div>
         </div>
         <div class="panel-content">
-            <div class="control-group">
+            <div class="city-search-group control-group">
                 <label for="city-input">City Search</label>
                 <div class="city-input-row">
                     <input type="text" id="city-input" placeholder="Enter city name...">
@@ -293,10 +317,8 @@
                 </div>
             </div>
 
-            <div class="mobile-buttons-container">
-                <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
-                <button id="high-res-button" onclick="navigateToHighRes()">🌟 Full Sky High Resolution Image</button>
-            </div>
+            <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
+            <button id="high-res-button" onclick="navigateToHighRes()">🌟 Full Sky High Resolution Image</button>
 
             <div class="mobile-info">
                 <div id="mobile-star-count">Stars visible: 0</div>
@@ -350,7 +372,6 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
             document.addEventListener('keydown', (e)=>{ if (e.key && e.key.toLowerCase()==='h') togglePanel(); });
             setupSliderListeners();
-            setupMobileButtonCloning();
             prevAzimuth = controls.getAzimuthalAngle();
             document.getElementById('loading')?.remove();
         }
@@ -411,7 +432,9 @@
             compassAccumDeg += delta * (180 / Math.PI);
             prevAzimuth = curAz;
             const rotator = document.getElementById('compass-rotator');
+            const rotatorMobile = document.getElementById('compass-rotator-mobile');
             if (rotator) rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
+            if (rotatorMobile) rotatorMobile.style.transform = `rotate(${compassAccumDeg}deg)`;
         }
 
         function searchCity() {
@@ -476,22 +499,6 @@
             params.set('twinkle', currentSettings.twinkle ? '1' : '0');
             
             window.location.href = URL_CONFIG.HIGH_RES_PAGE + '?' + params.toString();
-        }
-        
-        function setupMobileButtonCloning() {
-            const screenshotBtn = document.getElementById('screenshot-button');
-            const highResBtn = document.getElementById('high-res-button');
-            const mobileContainer = document.querySelector('.mobile-buttons-container');
-
-            if (window.innerWidth > 768) {
-                if (mobileContainer) mobileContainer.style.display = 'none';
-            } else {
-                if (screenshotBtn && highResBtn && mobileContainer) {
-                    mobileContainer.style.display = 'block';
-                    screenshotBtn.style.display = 'none';
-                    highResBtn.style.display = 'none';
-                }
-            }
         }
 
         function setupSliderListeners() {
@@ -606,12 +613,12 @@
                 starsMesh.renderOrder = 2; scene.add(starsMesh);
                 document.getElementById('desktop-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
                 document.getElementById('desktop-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
-                document.getElementById('desktop-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_',' ').split('/')[1] || timezone})`;
+                document.getElementById('desktop-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')}`;
                 const ms = document.getElementById('mobile-star-count');
                 if (ms) {
                     ms.textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
                     document.getElementById('mobile-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
-                    document.getElementById('mobile-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_',' ').split('/')[1] || timezone})`;
+                    document.getElementById('mobile-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')}`;
                 }
                 updateButton.disabled = false;
             }, 10);
@@ -729,10 +736,21 @@
 
         function updateCompassVisibilityLayout() {
             const compass = document.getElementById('compass-container');
-            if (currentSettings.showCompass) {
-                compass.style.display = 'block';
-            } else {
+            const compassMobile = document.getElementById('compass-container-mobile');
+            
+            if (!currentSettings.showCompass) {
                 compass.style.display = 'none';
+                compassMobile.style.display = 'none';
+                return;
+            }
+            
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                compass.style.display = 'none';
+                compassMobile.style.display = 'block';
+            } else {
+                compass.style.display = 'block';
+                compassMobile.style.display = 'none';
             }
         }
 
@@ -740,15 +758,12 @@
             const panel = document.getElementById('control-panel');
             const info = document.getElementById('info-display');
             const compass = document.getElementById('compass-container');
-            const pVisible = !panel.classList.contains('collapsed');
-            const iVisible = !info.classList.contains('collapsed');
-            const cVisible = compass.style.display !== 'none';
-            panel.style.display = 'none'; info.style.display = 'none'; compass.style.display = 'none';
+            const compassMobile = document.getElementById('compass-container-mobile');
+            const pD = panel.style.display, iD = info.style.display, cD = compass.style.display, cmD = compassMobile.style.display;
+            panel.style.display = 'none'; info.style.display = 'none'; compass.style.display = 'none'; compassMobile.style.display = 'none';
             renderer.render(scene, camera);
             const imgData = renderer.domElement.toDataURL('image/jpeg');
-            if (pVisible) panel.style.display = '';
-            if (iVisible) info.style.display = '';
-            if (cVisible) compass.style.display = 'block';
+            panel.style.display = pD; info.style.display = iD; compass.style.display = cD; compassMobile.style.display = cmD;
             const link = document.createElement('a'); link.href = imgData; link.download = 'astro-map-screenshot.jpg'; link.click();
         }
 
@@ -763,13 +778,7 @@
             renderer.render(scene, camera);
         }
 
-        window.addEventListener('resize', () => { 
-            camera.aspect = window.innerWidth / window.innerHeight; 
-            camera.updateProjectionMatrix(); 
-            renderer.setSize(window.innerWidth, window.innerHeight); 
-            updateCompassVisibilityLayout();
-            setupMobileButtonCloning();
-        });
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); updateCompassVisibilityLayout(); });
 
         window.addEventListener('load', () => {
             const hasParams = loadFromURL();
@@ -784,19 +793,6 @@
                 document.getElementById('loading').innerHTML = '<div class="loading-spinner"></div>Error: Could not load celestial libraries';
                 return;
             }
-            // Move buttons for mobile if needed
-            const panelContent = document.querySelector('.panel-content');
-            const mobileButtons = document.querySelector('.mobile-buttons-container');
-            if (window.innerWidth <= 768) {
-                const mobileInfo = document.querySelector('.mobile-info');
-                panelContent.insertBefore(mobileButtons, mobileInfo);
-            } else {
-                const collapsible = document.querySelector('.collapsible');
-                panelContent.insertBefore(document.getElementById('screenshot-button'), collapsible.nextSibling);
-                panelContent.insertBefore(document.getElementById('high-res-button'), document.getElementById('screenshot-button').nextSibling);
-                if (mobileButtons) mobileButtons.style.display = 'none';
-            }
-            
             initScene();
             updateCompassVisibilityLayout();
             updateSky();
