@@ -53,14 +53,14 @@
         #info-display { position: fixed; bottom: 20px; right: 20px; background: var(--panel-bg); padding: 20px 24px; border-radius: 18px; font-size: 13px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 2px solid rgba(255,215,0,0.3); box-shadow: 0 12px 40px rgba(10,30,70,0.4), 0 0 80px rgba(135,206,250,0.2); transition: all 0.5s cubic-bezier(0.4,0,0.2,1); z-index: 999; }
         
         @media (max-width: 768px) {
-            #control-panel { bottom: 0; top: auto; left: 0; right: 0; width: 100vw; height: 45vh; max-height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; }
-            #control-panel.mobile-collapsed { transform: translateY(calc(100% - 60px)); }
+            #control-panel { bottom: 0; top: auto; left: 50%; transform: translateX(-50%); right: auto; width: 100vw; height: 45vh; max-height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; }
+            #control-panel.mobile-collapsed { transform: translateX(-50%) translateY(calc(100% - 60px)); }
             #info-display { display: none; }
             .mobile-info { display: block; margin-top: 24px; padding: 20px; background: rgba(6,16,36,0.6); border-radius: 16px; border: 2px solid rgba(255,215,0,0.2); }
             .desktop-info { display: none; }
             .mobile-handle { display: block; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; background: rgba(255,215,0,0.5); border-radius: 2px; cursor: pointer; }
             #compass-container-main { bottom: calc(45vh + 20px); }
-            #compass-container-mobile { bottom: 24px; }
+            #compass-container-mobile { bottom: 80px; }
         }
         @media (min-width: 769px) {
             .mobile-handle { display: none; }
@@ -82,9 +82,22 @@
         .panel-content::-webkit-scrollbar { display: none; }
         .timezone-select select { -webkit-appearance: none; -moz-appearance: none; appearance: none; scrollbar-width: none; -ms-overflow-style: none; }
         .timezone-select select::-webkit-scrollbar { display: none; }
+        
+        .city-search-group { margin-bottom: 24px; }
+        .city-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .city-input-row input { flex: 1; }
+        .city-results { display: none; background: rgba(6,16,36,0.8); border: 2px solid rgba(255,215,0,0.3); border-radius: 14px; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
+        .city-results.show { display: block; }
+        .city-result-item { padding: 10px; margin: 5px 0; background: rgba(8,24,52,0.6); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
+        .city-result-item:hover { background: rgba(255,215,0,0.2); border: 1px solid var(--accent-gold); }
+        .city-result-item .city-name { font-weight: 600; color: var(--accent-gold); }
+        .city-result-item .city-details { font-size: 12px; color: rgba(255,215,0,0.7); margin-top: 4px; }
+        .city-loading { text-align: center; padding: 20px; color: var(--accent-gold); }
+        .city-error { text-align: center; padding: 20px; color: rgba(255,120,120,0.9); }
+        
         .control-group { margin-bottom: 24px; }
         .control-group label { display: block; margin-bottom: 12px; font-size: 13px; color: rgba(255,215,0,0.9); text-transform: uppercase; letter-spacing: 1.8px; font-weight: 600; font-family: 'Playfair Display', serif; text-shadow: 0 0 15px rgba(255,215,0,0.3); }
-        .control-group input[type="number"] { width: 100%; padding: 16px 18px; background: rgba(6,16,36,0.7); border: 2px solid rgba(255,215,0,0.25); border-radius: 14px; color: #e0f4ff; font-size: 15px; font-family: 'Crimson Text', serif; }
+        .control-group input[type="number"], .control-group input[type="text"] { width: 100%; padding: 16px 18px; background: rgba(6,16,36,0.7); border: 2px solid rgba(255,215,0,0.25); border-radius: 14px; color: #e0f4ff; font-size: 15px; font-family: 'Crimson Text', serif; }
         .control-group input:focus { outline: none; background: rgba(8,24,52,0.9); border-color: var(--accent-gold); box-shadow: 0 0 0 4px rgba(255,215,0,0.15), 0 0 40px rgba(255,215,0,0.2); }
         .control-group input.error { border-color: rgba(255,120,120,0.8); background: rgba(80,10,10,0.3); }
         .error-message { color: rgba(255,165,165,0.95); font-size: 11px; margin-top: 6px; display: none; }
@@ -105,6 +118,7 @@
         input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; background: radial-gradient(circle, #fff 0%, var(--accent-gold) 100%); border-radius: 50%; border: 3px solid var(--accent-gold); box-shadow: 0 4px 15px rgba(255,215,0,0.6); }
         .range-value { display: inline-block; margin-left: 14px; font-size: 14px; color: var(--accent-gold); font-weight: 700; min-width: 55px; text-align: right; font-family: 'Playfair Display', serif; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
         button { width: 100%; padding: 18px; background: var(--button-gradient) !important; border: 2px solid var(--accent-gold) !important; border-radius: 16px; color: white !important; font-weight: 700; font-size: 16px; font-family: 'Playfair Display', serif; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease !important; margin-top: 18px; position: relative; overflow: hidden; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3), 0 0 50px rgba(70, 130, 180, 0.2), inset 0 1px 0 rgba(255, 215, 0, 0.3) !important; }
+        button.search-button { margin-top: 0; }
         button::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%); transform: scale(0); transition: transform 0.6s ease; }
         button:hover { transform: translateY(-3px) !important; box-shadow: 0 15px 40px rgba(138, 43, 226, 0.4), 0 0 80px rgba(70, 130, 180, 0.3), inset 0 1px 0 rgba(255, 215, 0, 0.5) !important; }
         button:hover::before { transform: scale(1); }
@@ -153,6 +167,7 @@
             <div class="compass-pointer"></div>
         </div>
     </div>
+    
     <!-- Secondary compass (mobile only when panel minimized) -->
     <div id="compass-container-mobile" class="compass-container">
         <div class="compass">
@@ -177,6 +192,15 @@
             <div class="toggle-panel"></div>
         </div>
         <div class="panel-content">
+            <div class="city-search-group">
+                <label for="city-input">City Search</label>
+                <div class="city-input-row">
+                    <input type="text" id="city-input" placeholder="Enter city name...">
+                    <button class="search-button" onclick="searchCity()">Search</button>
+                </div>
+                <div id="city-results" class="city-results"></div>
+            </div>
+            
             <div class="control-group">
                 <label for="latitude">Latitude</label>
                 <input type="number" id="latitude" min="-90" max="90" step="0.0001" value="51.198062">
@@ -295,6 +319,7 @@
             </div>
 
             <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
+            <button id="high-res-button" onclick="navigateToHighRes()">🌟 Full Sky High Resolution Image</button>
         </div>
     </div>
     
@@ -309,6 +334,14 @@
     
     <script src="stars.js"></script>
     <script>
+        // URL Configuration - All URLs defined here for easy management
+        const URL_CONFIG = {
+            GEOCODING_API: 'https://astroapi.reisig.org/geocode',  // Coolify proxy endpoint
+            HIGH_RES_PAGE: './get-image.html',  // High resolution image page
+            CURRENT_PAGE: window.location.pathname,  // Current page for URL updates
+            STARS_SCRIPT: './stars.js'  // Stars data script
+        };
+
         let scene, camera, renderer, controls, starsMesh;
         let horizonMesh, earthMesh, sunGlowMesh;
         let currentSettings = { magCutoff: 7.5, starScale: 0.1, brightness: 1.8, glowIntensity: 0.85, colorTemp: 0.4, twinkle: true, showCompass: true };
@@ -388,12 +421,77 @@
             const curAz = controls.getAzimuthalAngle();
             let delta = curAz - prevAzimuth;
             delta = THREE.MathUtils.euclideanModulo(delta + Math.PI, Math.PI * 2) - Math.PI;
-            compassAccumDeg += -delta * (180 / Math.PI);
+            // Fixed: Reversed the sign to correct compass rotation direction
+            compassAccumDeg += delta * (180 / Math.PI);
             prevAzimuth = curAz;
             const rotMain = document.getElementById('compass-rotator-main');
             const rotMobile = document.getElementById('compass-rotator-mobile');
             if (rotMain) rotMain.style.transform = `rotate(${compassAccumDeg}deg)`;
             if (rotMobile) rotMobile.style.transform = `rotate(${compassAccumDeg}deg)`;
+        }
+
+        function searchCity() {
+            const cityName = document.getElementById('city-input').value.trim();
+            if (!cityName) return;
+            
+            const resultsDiv = document.getElementById('city-results');
+            resultsDiv.innerHTML = '<div class="city-loading">Searching for cities...</div>';
+            resultsDiv.classList.add('show');
+            
+            fetch(`${URL_CONFIG.GEOCODING_API}?city=${encodeURIComponent(cityName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        displayCityResults(data);
+                    } else {
+                        resultsDiv.innerHTML = '<div class="city-error">No cities found. Please type coordinates manually.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error searching city:', error);
+                    resultsDiv.innerHTML = '<div class="city-error">Error searching. Please try again or enter coordinates manually.</div>';
+                });
+        }
+
+        function displayCityResults(cities) {
+            const resultsDiv = document.getElementById('city-results');
+            resultsDiv.innerHTML = '';
+            
+            cities.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'city-result-item';
+                item.innerHTML = `
+                    <div class="city-name">${city.name}</div>
+                    <div class="city-details">${city.state || ''} ${city.country} - Lat: ${city.latitude.toFixed(4)}, Lon: ${city.longitude.toFixed(4)}</div>
+                `;
+                item.onclick = () => selectCity(city);
+                resultsDiv.appendChild(item);
+            });
+        }
+
+        function selectCity(city) {
+            document.getElementById('latitude').value = city.latitude.toFixed(6);
+            document.getElementById('longitude').value = city.longitude.toFixed(6);
+            document.getElementById('city-results').classList.remove('show');
+            document.getElementById('city-input').value = '';
+            updateSkyAndURL();
+        }
+
+        function navigateToHighRes() {
+            const params = new URLSearchParams();
+            params.set('lat', document.getElementById('latitude').value);
+            params.set('lon', document.getElementById('longitude').value);
+            params.set('date', document.getElementById('date-input').value);
+            params.set('time', document.getElementById('time-input').value);
+            params.set('tz', document.getElementById('timezone-select').value);
+            params.set('mag', document.getElementById('mag-cutoff').value);
+            params.set('scale', document.getElementById('star-scale').value);
+            params.set('bright', document.getElementById('brightness').value);
+            params.set('glow', document.getElementById('glow-intensity').value);
+            params.set('temp', document.getElementById('color-temp').value);
+            params.set('twinkle', currentSettings.twinkle ? '1' : '0');
+            
+            window.location.href = URL_CONFIG.HIGH_RES_PAGE + '?' + params.toString();
         }
 
         function setupSliderListeners() {
@@ -571,7 +669,7 @@
             params.set('temp', document.getElementById('color-temp').value);
             params.set('twinkle', currentSettings.twinkle ? '1' : '0');
             params.set('compass', currentSettings.showCompass ? '1' : '0');
-            window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
+            window.history.replaceState({}, '', URL_CONFIG.CURRENT_PAGE + '?' + params.toString());
         }
         function loadFromURL() {
             const params = new URLSearchParams(window.location.search);
