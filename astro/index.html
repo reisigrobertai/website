@@ -308,8 +308,13 @@
             #compass-container {
                 width: 140px;
                 height: 140px;
-                bottom: calc(45vh + 20px);
-                transition: bottom 0.3s ease;
+                bottom: 0;
+                margin-bottom: 70px;
+                transition: margin-bottom 0.3s ease;
+            }
+
+            #control-panel.mobile-collapsed + #compass-container {
+                margin-bottom: 70px;
             }
         }
 
@@ -329,7 +334,7 @@
             backdrop-filter: none;
             -webkit-backdrop-filter: none;
         }
-        
+
         #control-panel.collapsed .panel-content { display: none; }
         #control-panel.collapsed .toggle-panel { display: none; }
         
@@ -876,6 +881,22 @@
             <div class="compass-pointer"></div>
         </div>
     </div>
+
+    <div id="mobile-compass-container" style="display: none;">
+        <div id="mobile-compass">
+            <div class="compass-outer-ring"></div>
+            <div class="compass-base">
+                <div class="compass-rotator" id="mobile-compass-rotator">
+                    <div class="compass-rose"></div>
+                    <div class="compass-label n">N</div>
+                    <div class="compass-label e">E</div>
+                    <div class="compass-label s">S</div>
+                    <div class="compass-label w">W</div>
+                </div>
+            </div>
+            <div class="compass-pointer"></div>
+        </div>
+    </div>
     
     <div id="control-panel">
         <div class="mobile-handle" onclick="toggleMobilePanel()"></div>
@@ -993,12 +1014,12 @@
                 
                 <div class="toggle-group">
                     <label>Stellar Scintillation</label>
-                    <div class="toggle-switch active" id="twinkle-toggle" onclick="toggleTwinkle()"></div>
+                    <div class="toggle-switch" id="twinkle-toggle" onclick="toggleTwinkle()"></div>
                 </div>
                 
                 <div class="toggle-group">
                     <label>Celestial Compass</label>
-                    <div class="toggle-switch active" id="compass-toggle" onclick="toggleCompass()"></div>
+                    <div class="toggle-switch" id="compass-toggle" onclick="toggleCompass()"></div>
                 </div>
             </div>
 
@@ -1205,6 +1226,11 @@
             prevAzimuth = curAz;
 
             rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
+
+            const mobileRotator = document.getElementById('mobile-compass-rotator');
+            if (mobileRotator) {
+                mobileRotator.style.transform = `rotate(${compassAccumDeg}deg)`;
+            }
         }
 
         function setupSliderListeners() {
@@ -1431,6 +1457,7 @@
                     createStarField();
                 }
             }
+            updateURL();
         }
         
         function updateSkyAndURL() {
@@ -1507,12 +1534,15 @@
             if (window.innerWidth <= 768) {
                 const panel = document.getElementById('control-panel');
                 const compass = document.getElementById('compass-container');
+                const mobileCompass = document.getElementById('mobile-compass-container');
                 panel.classList.toggle('mobile-collapsed');
 
                 if (panel.classList.contains('mobile-collapsed')) {
-                    compass.style.bottom = '80px';
+                    compass.style.display = 'none';
+                    mobileCompass.style.display = 'block';
                 } else {
-                    compass.style.bottom = 'calc(45vh + 20px)';
+                    compass.style.display = 'block';
+                    mobileCompass.style.display = 'none';
                 }
             }
         }
@@ -1531,6 +1561,10 @@
             toggle.classList.toggle('active');
             currentSettings.showCompass = toggle.classList.contains('active');
             document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
+            const mobileCompass = document.getElementById('mobile-compass-container');
+            if (mobileCompass) {
+                mobileCompass.style.opacity = currentSettings.showCompass ? '1' : '0';
+            }
         }
 
         function takeScreenshot() {
@@ -1590,7 +1624,7 @@
             }
             
             initScene();
-            toggleCompass(); // Ensure compass state is applied on load
+            toggleCompass();
             updateSky();
             animate();
         });
