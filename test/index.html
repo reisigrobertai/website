@@ -91,7 +91,7 @@
             z-index: 0;
         }
 
-        #globe-canvas { opacity: 0.3; }
+        #globe-canvas { opacity: 0.5; }
 
         .page-wrapper {
             position: relative;
@@ -713,7 +713,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             const geometry = new THREE.SphereGeometry(1.5, 32, 32);
-            const material = new THREE.PointsMaterial({ color: 0x333333, size: 0.015 });
+            const material = new THREE.PointsMaterial({ color: 0x666666, size: 0.015 });
             const globe = new THREE.Points(geometry, material);
             scene.add(globe);
             camera.position.z = 3;
@@ -731,12 +731,12 @@
             let frameCounter = 0;
             let userActive = false;
             let activityTimeout;
-            let targetAmplitude = 5;
-            let currentAmplitude = 5;
+            let targetAmplitude = 2.5;
+            let currentAmplitude = 2.5;
 
             function setUserActivity(active) {
                 userActive = active;
-                targetAmplitude = active ? 50 : 5;
+                targetAmplitude = active ? 25 : 2.5;
                 clearTimeout(activityTimeout);
                 if (active) {
                     activityTimeout = setTimeout(() => {
@@ -762,7 +762,7 @@
                 const numPoints = Math.ceil(w / pointSpacing);
                 points = [];
                 for (let i = 0; i < numPoints; i++) {
-                    points.push(generateBaselineNoise(baselineY, 5));
+                    points.push(generateBaselineNoise(baselineY, 2.5));
                 }
             }
             setupEMG();
