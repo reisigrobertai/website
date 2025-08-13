@@ -5,16 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Robert's Astro Map</title>
     
-    <!-- Three.js for 3D rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- OrbitControls for mouse interaction -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    
-    <!-- Astronomy Engine -->
     <script src="https://cdn.jsdelivr.net/npm/astronomy-engine/astronomy.browser.min.js"></script>
-    
-    <!-- Moment.js for date/time handling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
     
@@ -24,7 +17,7 @@
         :root {
             --primary-blue: #87CEEB;
             --secondary-blue: #4682B4;
-            --accent-gold: #8B6508; /* Even darker gold tone */
+            --accent-gold: #8B6508;
             --deep-gold: #8B6508;
             --mystical-purple: #9370DB;
             --cosmic-dark: #0a0a1a;
@@ -71,7 +64,6 @@
             cursor: pointer;
         }
 
-        /* Remove spin buttons for number inputs */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -81,7 +73,6 @@
             -moz-appearance: textfield;
         }
         
-        /* ENHANCED MYSTICAL COMPASS */
         #compass-container {
             position: absolute;
             bottom: 30px;
@@ -101,7 +92,6 @@
             filter: drop-shadow(0 12px 30px rgba(255, 215, 0, 0.2));
         }
 
-        /* Outer mystical ring */
         .compass-outer-ring {
             position: absolute;
             width: 100%;
@@ -139,7 +129,6 @@
                 0 0 50px rgba(135, 206, 250, 0.1);
         }
 
-        /* Inner constellation ring */
         .compass-base::before {
             content: '';
             position: absolute;
@@ -154,7 +143,6 @@
             opacity: 0.6;
         }
 
-        /* Central mystical symbol */
         .compass-base::after {
             content: '✦';
             position: absolute;
@@ -226,7 +214,6 @@
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
         }
         
-        /* DESKTOP LAYOUT */
         #control-panel { 
             position: fixed;
             top: 20px;
@@ -267,7 +254,6 @@
             z-index: 999;
         }
 
-        /* MOBILE LAYOUT - Single Bottom Panel */
         @media (max-width: 768px) {
             #control-panel {
                 position: fixed;
@@ -290,11 +276,11 @@
             }
 
             #info-display {
-                display: none; /* Hide separate info on mobile */
+                display: none;
             }
 
             .mobile-info {
-                display: block; /* Show integrated info in panel on mobile */
+                display: block;
                 margin-top: 24px;
                 padding: 20px;
                 background: rgba(6, 16, 36, 0.6);
@@ -303,7 +289,7 @@
             }
 
             .desktop-info {
-                display: none; /* Hide in mobile integrated view */
+                display: none;
             }
 
             .mobile-handle {
@@ -426,7 +412,6 @@
         
         .panel-content::-webkit-scrollbar { display: none; }
 
-        /* Remove scrollbars for timezone select */
         .timezone-select select {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -530,7 +515,6 @@
             .datetime-group { grid-template-columns: 1fr; }
         }
 
-        /* ENHANCED SLIDER DESIGN */
         .range-container { 
             position: relative; 
             margin-top: 12px; 
@@ -631,7 +615,6 @@
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
-        /* BUTTON WITH CONSISTENT STYLING */
         button { 
             width: 100%; 
             padding: 18px; 
@@ -766,15 +749,6 @@
             font-family: 'Crimson Text', serif;
         }
         
-        .info-hint {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 215, 0, 0.3);
-            font-size: 11px;
-            color: rgba(200, 230, 255, 0.8);
-            line-height: 1.6;
-        }
-        
         .legal-links {
             margin-top: 12px;
             font-size: 10px;
@@ -799,15 +773,6 @@
             margin: 8px 0;
             color: rgba(255, 215, 0, 0.9);
             font-family: 'Crimson Text', serif;
-        }
-
-        .mobile-info .info-hint {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 215, 0, 0.3);
-            font-size: 11px;
-            color: rgba(200, 230, 255, 0.8);
-            line-height: 1.6;
         }
 
         .mobile-info .legal-links {
@@ -896,7 +861,6 @@
         </div>
     </div>
     
-    <!-- Enhanced Mystical Compass -->
     <div id="compass-container">
         <div id="compass">
             <div class="compass-outer-ring"></div>
@@ -913,7 +877,6 @@
         </div>
     </div>
     
-    <!-- Control Panel -->
     <div id="control-panel">
         <div class="mobile-handle" onclick="toggleMobilePanel()"></div>
         <div class="panel-header" onclick="togglePanel()">
@@ -1039,44 +1002,31 @@
                 </div>
             </div>
 
-            <!-- Integrated mobile info section -->
             <div class="mobile-info">
                 <div id="mobile-star-count">Stars visible: 0</div>
                 <div id="mobile-location-info">Location: --</div>
                 <div id="mobile-time-info">Time: --</div>
-                <div class="info-hint">
-                    Drag to explore • Arrow keys to navigate<br>
-                    Scroll to zoom • H to hide panel
-                </div>
                 <div class="legal-links">
                     <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
                 </div>
             </div>
 
-            <!-- Screenshot button -->
             <button id="screenshot-button" onclick="takeScreenshot()">📸 Capture Celestial View</button>
         </div>
     </div>
     
-    <!-- Info Display (desktop only) -->
     <div id="info-display" class="desktop-info">
         <div id="desktop-star-count">Stars visible: 0</div>
         <div id="desktop-location-info">Location: --</div>
         <div id="desktop-time-info">Time: --</div>
-        <div class="info-hint">
-            Drag to explore • Arrow keys to navigate<br>
-            Scroll to zoom • H to hide panel
-        </div>
         <div class="legal-links">
             <a href="#" target="_blank">Imprint</a> | <a href="#" target="_blank">Privacy Policy</a>
         </div>
     </div>
     
-    <!-- Load star catalog -->
     <script src="stars.js"></script>
     
     <script>
-        // Global variables
         let scene, camera, renderer, controls, starsMesh;
         let horizonMesh, earthMesh, sunGlowMesh;
         let currentSettings = {
@@ -1092,10 +1042,6 @@
         let touchStartDistance = 0;
         let prevAzimuth = 0;
         let compassAccumDeg = 0;
-        
-        // For continuous arrow key rotation
-        const keyStates = {};
-        let rotationFrame;
 
         function initScene() {
             scene = new THREE.Scene();
@@ -1118,7 +1064,7 @@
             controls.enableZoom = false;
             controls.minDistance = 0.1;
             controls.maxDistance = 0.1;
-            controls.rotateSpeed = -0.4; // Inverted for intuitive touch
+            controls.rotateSpeed = -0.4;
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minPolarAngle = 0.05;
@@ -1217,49 +1163,12 @@
             renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
         }
         
-        // Enhanced arrow key navigation with continuous rotation on hold
         function setupKeyboardControls() {
             document.addEventListener('keydown', (event) => {
-                const tag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
-                if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
-
-                keyStates[event.key] = true;
+                if (event.key.toLowerCase() === 'h') {
+                    togglePanel();
+                }
             });
-
-            document.addEventListener('keyup', (event) => {
-                keyStates[event.key] = false;
-            });
-
-            function rotateLoop() {
-                let rotated = false;
-                const baseRot = 0.08;
-                const rot = (keyStates['Shift'] ? baseRot * 2 : baseRot) / 60; // Per frame for 60FPS
-
-                if (keyStates['ArrowLeft']) {
-                    controls.rotateLeft(rot);
-                    rotated = true;
-                }
-                if (keyStates['ArrowRight']) {
-                    controls.rotateLeft(-rot);
-                    rotated = true;
-                }
-                if (keyStates['ArrowUp']) {
-                    controls.rotateUp(rot);
-                    rotated = true;
-                }
-                if (keyStates['ArrowDown']) {
-                    controls.rotateUp(-rot);
-                    rotated = true;
-                }
-
-                if (keyStates['h'] || keyStates['H']) togglePanel();
-
-                if (rotated) controls.update();
-
-                rotationFrame = requestAnimationFrame(rotateLoop);
-            }
-
-            rotateLoop();
         }
         
         function onTouchStart(event) {
@@ -1298,7 +1207,6 @@
             rotator.style.transform = `rotate(${compassAccumDeg}deg)`;
         }
 
-        // Enhanced slider listeners for real-time updates
         function setupSliderListeners() {
             const sliders = [
                 { id: 'mag-cutoff', fill: 'mag-cutoff-fill', val: 'mag-cutoff-value' },
@@ -1319,11 +1227,8 @@
                     valueEl.textContent = parseFloat(slider.value).toFixed(1);
                 };
 
-                // Listen to both input and change events for comprehensive coverage
                 slider.addEventListener('input', updateVisual);
                 slider.addEventListener('change', updateVisual);
-                
-                // Initialize
                 updateVisual();
             });
         }
@@ -1483,12 +1388,10 @@
                 starsMesh.renderOrder = 2;
                 scene.add(starsMesh);
                 
-                // Update desktop info
                 document.getElementById('desktop-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
                 document.getElementById('desktop-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
                 document.getElementById('desktop-time-info').textContent = `Time: ${localTime.format('YYYY-MM-DD HH:mm')} (${timezone.replace('_', ' ').split('/')[1] || timezone})`;
 
-                // Update mobile info (if on mobile)
                 if (document.getElementById('mobile-star-count')) {
                     document.getElementById('mobile-star-count').textContent = `Stars visible: ${visibleCount.toLocaleString()}`;
                     document.getElementById('mobile-location-info').textContent = `Location: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
@@ -1589,7 +1492,6 @@
             const slider = document.getElementById(sliderId);
             if (slider) {
                 slider.value = value;
-                // Trigger the input event to update visuals
                 slider.dispatchEvent(new Event('input'));
             }
         }
@@ -1607,11 +1509,10 @@
                 const compass = document.getElementById('compass-container');
                 panel.classList.toggle('mobile-collapsed');
 
-                // Adjust compass position
                 if (panel.classList.contains('mobile-collapsed')) {
-                    compass.style.bottom = '80px'; // Move down
+                    compass.style.bottom = '80px';
                 } else {
-                    compass.style.bottom = 'calc(45vh + 20px)'; // Move up
+                    compass.style.bottom = 'calc(45vh + 20px)';
                 }
             }
         }
@@ -1632,9 +1533,7 @@
             document.getElementById('compass-container').style.opacity = currentSettings.showCompass ? '1' : '0';
         }
 
-        // Screenshot functionality
         function takeScreenshot() {
-            // Hide UI elements
             const panel = document.getElementById('control-panel');
             const info = document.getElementById('info-display');
             const compass = document.getElementById('compass-container');
@@ -1646,18 +1545,14 @@
             info.style.display = 'none';
             compass.style.display = 'none';
 
-            // Render one frame without UI
             renderer.render(scene, camera);
 
-            // Capture as JPG
             const imgData = renderer.domElement.toDataURL('image/jpeg');
 
-            // Restore UI
             panel.style.display = originalPanelDisplay;
             info.style.display = originalInfoDisplay;
             compass.style.display = originalCompassDisplay;
 
-            // Download
             const link = document.createElement('a');
             link.href = imgData;
             link.download = 'astro-map-screenshot.jpg';
