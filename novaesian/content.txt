@@ -1,0 +1,109 @@
+# Novaesian Brass - Website Content
+# Diese Datei enthält alle Texte und Bildpfade für die Website
+# Einfach die Werte ändern und die Seite neu laden
+
+# ============================================
+# ÜBER UNS - Vorstellungstext
+# ============================================
+[ABOUT]
+[PLATZHALTER] Hier kommt der Vorstellungstext der Gruppe hin. Beschreibe wer ihr seid, was euch ausmacht, welche Instrumente ihr spielt und für welche Events ihr spielt. 2-3 Sätze sind perfekt.
+
+# ============================================
+# BILDERGALERIE - Auftritte
+# ============================================
+[GALLERY]
+gallery-1.jpg
+gallery-2.jpg
+gallery-3.jpg
+gallery-4.jpg
+gallery-5.jpg
+gallery-6.jpg
+
+# ============================================
+# MUSIKER - Portraits und Beschreibungen
+# ============================================
+[MUSICIANS]
+
+name: [Name des ersten Trompeters]
+instrument: 1. Trompete
+image: musiker-1.jpg
+bio: [Kurze Beschreibung des Musikers - 1-2 Sätze über Erfahrung, Stil oder Persönlichkeit]
+
+name: [Name des zweiten Trompeters]
+instrument: 2. Trompete
+image: musiker-2.jpg
+bio: [Kurze Beschreibung des Musikers]
+
+name: [Name des dritten Trompeters]
+instrument: 3. Trompete
+image: musiker-3.jpg
+bio: [Kurze Beschreibung des Musikers]
+
+name: [Name des ersten Posaunisten]
+instrument: 1. Posaune
+image: musiker-4.jpg
+bio: [Kurze Beschreibung des Musikers]
+
+name: [Name des zweiten Posaunisten]
+instrument: 2. Posaune
+image: musiker-5.jpg
+bio: [Kurze Beschreibung des Musikers]
+
+name: [Name des Tubisten]
+instrument: Tuba
+image: musiker-6.jpg
+bio: [Kurze Beschreibung des Musikers]
+
+name: [Name des Schlagzeugers]
+instrument: Schlagzeug
+image: musiker-7.jpg
+bio: [Kurze Beschreibung des Musikers]
+
+# ============================================
+# FAQ - Häufig gestellte Fragen
+# ============================================
+[FAQ]
+
+q: [Erste häufige Frage, z.B. "Für welche Anlässe können wir Sie buchen?"]
+a: [Antwort auf die erste Frage]
+
+q: [Zweite Frage]
+a: [Antwort auf die zweite Frage]
+
+q: [Dritte Frage]
+a: [Antwort auf die dritte Frage]
+
+q: [Vierte Frage]
+a: [Antwort auf die vierte Frage]
+
+q: [Fünfte Frage]
+a: [Antwort auf die fünfte Frage]
+
+q: [Sechste Frage]
+a: [Antwort auf die sechste Frage]
+
+# ============================================
+# KONTAKT - Social Media & Kontaktdaten
+# ============================================
+[CONTACT]
+instagram: https://www.instagram.com/novaesianbrass/
+whatsapp: 4921312345678
+email: info@novaesian-brass.de
+
+# ============================================
+# IMPRESSUM - Rechtliche Angaben
+# ============================================
+[IMPRESSUM]
+<p><strong>Angaben gemäß § 5 TMG</strong></p>
+<p>[Name der Gruppe/Person]<br>
+[Straße und Hausnummer]<br>
+[PLZ und Ort]</p>
+<p><strong>Vertreten durch:</strong><br>
+[Name(n) der vertretungsberechtigten Person(en)]</p>
+<p><strong>Kontakt:</strong><br>
+Telefon: [Telefonnummer]<br>
+E-Mail: [E-Mail-Adresse]</p>
+<p><strong>Umsatzsteuer-ID:</strong><br>
+Umsatzsteuer-Identifikationsnummer gemäß §27a Umsatzsteuergesetz: [falls vorhanden]</p>
+<p><strong>Haftungsausschluss:</strong><br>
+Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.</p>
