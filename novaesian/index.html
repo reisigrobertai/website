@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novaesian Brass - Blasmusik aus Neuss</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Novaesian Brass - Blasmusik aus Neuss">
+    <meta property="og:description" content="Modernes Brass-Septett aus Neuss für Ihre Veranstaltung">
+    <meta property="og:image" content="foto.jpg">
+    <meta property="og:type" content="website">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-bg: #0a0a0a;
+            --dark-secondary: #1a1a1a;
+            --dark-tertiary: #2a2a2a;
+            --bordeaux: #8B0000;
+            --bordeaux-light: #A52A2A;
+            --text-white: #ffffff;
+            --text-gray: #b0b0b0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-white);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1.5rem 5%;
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            padding: 1rem 5%;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-white);
+        }
+
+        .logo span {
+            color: var(--bordeaux);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.4);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 5%;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease forwards 0.3s;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+        }
+
+        .hero-content p {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: var(--text-gray);
+            font-weight: 300;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 8rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        section.fade-in {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        section.fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 3rem;
+            letter-spacing: -1px;
+            text-align: center;
+        }
+
+        h2 span {
+            color: var(--bordeaux);
+        }
+
+        /* About Section */
+        .about-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: var(--text-gray);
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Gallery Section */
+        .gallery-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .gallery-wrapper {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-slide {
+            min-width: 100%;
+            height: 600px;
+        }
+
+        .gallery-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(139, 0, 0, 0.8);
+            color: white;
+            border: none;
+            font-size: 2rem;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .gallery-nav:hover {
+            background-color: var(--bordeaux-light);
+        }
+
+        .gallery-nav.prev {
+            left: 20px;
+        }
+
+        .gallery-nav.next {
+            right: 20px;
+        }
+
+        .gallery-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--dark-tertiary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: var(--bordeaux);
+            transform: scale(1.2);
+        }
+
+        /* Musicians Section */
+        .musicians {
+            display: flex;
+            flex-direction: column;
+            gap: 6rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .musician {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 3rem;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .musician.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .musician:nth-child(even) {
+            grid-template-columns: 1fr 300px;
+            transform: translateX(50px);
+        }
+
+        .musician:nth-child(even) .musician-image {
+            order: 2;
+        }
+
+        .musician:nth-child(even) .musician-info {
+            order: 1;
+            text-align: right;
+        }
+
+        .musician-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .musician-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .musician-info h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .musician-info .instrument {
+            color: var(--bordeaux);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .musician-info p {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        /* FAQ Section */
+        .faq-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background-color: var(--dark-secondary);
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            background-color: var(--dark-tertiary);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 2rem;
+            background: none;
+            border: none;
+            color: var(--text-white);
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 2rem;
+            color: var(--bordeaux);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-question.active::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 2rem;
+        }
+
+        .faq-answer.active {
+            max-height: 500px;
+            padding: 0 2rem 2rem 2rem;
+        }
+
+        .faq-answer p {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        /* Contact Section */
+        .contact-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .contact-item {
+            text-align: center;
+            padding: 3rem 2rem;
+            background-color: var(--dark-secondary);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background-color: var(--dark-tertiary);
+            transform: translateY(-5px);
+        }
+
+        .contact-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-item a {
+            color: var(--bordeaux);
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item a:hover {
+            color: var(--bordeaux-light);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-secondary);
+            padding: 3rem 5%;
+            text-align: center;
+            margin-top: 8rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--bordeaux);
+        }
+
+        .footer-copyright {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Impressum Overlay */
+        .impressum-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .impressum-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .impressum-content {
+            background-color: var(--dark-secondary);
+            padding: 4rem;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .impressum-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: none;
+            border: none;
+            color: var(--text-white);
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .impressum-close:hover {
+            color: var(--bordeaux);
+        }
+
+        .impressum-content h2 {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .impressum-content p {
+            color: var(--text-gray);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            section {
+                padding: 5rem 5%;
+            }
+
+            .musician {
+                grid-template-columns: 1fr !important;
+                gap: 2rem;
+            }
+
+            .musician:nth-child(even) .musician-image,
+            .musician:nth-child(even) .musician-info {
+                order: initial;
+            }
+
+            .musician:nth-child(even) .musician-info {
+                text-align: left;
+            }
+
+            .musician-image {
+                width: 100%;
+                height: 350px;
+            }
+
+            .gallery-slide {
+                height: 400px;
+            }
+
+            .gallery-nav {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.5rem;
+            }
+
+            .gallery-nav.prev {
+                left: 10px;
+            }
+
+            .gallery-nav.next {
+                right: 10px;
+            }
+
+            .impressum-content {
+                padding: 2rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="logo">Novaesian <span>Brass</span></div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <img src="hero-image.jpg" alt="Novaesian Brass" class="hero-image">
+        <div class="hero-content">
+            <h1>Novaesian Brass</h1>
+            <p>Modernes Brass-Septett aus Neuss</p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="fade-in">
+        <h2>Über <span>uns</span></h2>
+        <p class="about-text" id="about-text">
+            <!-- Text wird aus content.txt geladen -->
+        </p>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="fade-in">
+        <h2>Unsere <span>Auftritte</span></h2>
+        <div class="gallery-container">
+            <button class="gallery-nav prev" onclick="changeSlide(-1)">‹</button>
+            <button class="gallery-nav next" onclick="changeSlide(1)">›</button>
+            <div class="gallery-wrapper" id="galleryWrapper">
+                <!-- Slides werden dynamisch geladen -->
+            </div>
+        </div>
+        <div class="gallery-dots" id="galleryDots"></div>
+    </section>
+
+    <!-- Musicians Section -->
+    <section id="musicians" class="fade-in">
+        <h2>Die <span>Musiker</span></h2>
+        <div class="musicians" id="musicians-container">
+            <!-- Musiker werden dynamisch geladen -->
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="fade-in">
+        <h2>Häufige <span>Fragen</span></h2>
+        <div class="faq-container" id="faq-container">
+            <!-- FAQ Items werden dynamisch geladen -->
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="fade-in">
+        <h2>Kontakt <span>aufnehmen</span></h2>
+        <div class="contact-container">
+            <div class="contact-item">
+                <div class="contact-icon">📷</div>
+                <h3>Instagram</h3>
+                <a href="" id="instagram-link" target="_blank">@novaesianbrass</a>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">💬</div>
+                <h3>WhatsApp</h3>
+                <a href="" id="whatsapp-link" target="_blank">Nachricht senden</a>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">✉️</div>
+                <h3>E-Mail</h3>
+                <a href="" id="email-link">E-Mail schreiben</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="#" onclick="openImpressum(); return false;">Impressum</a>
+            <a href="datenschutz.pdf" target="_blank">Datenschutzerklärung</a>
+        </div>
+        <div class="footer-copyright">
+            © 2025 Novaesian Brass. Alle Rechte vorbehalten.
+        </div>
+    </footer>
+
+    <!-- Impressum Overlay -->
+    <div class="impressum-overlay" id="impressumOverlay">
+        <div class="impressum-content">
+            <button class="impressum-close" onclick="closeImpressum()">×</button>
+            <h2>Impressum</h2>
+            <div id="impressum-text">
+                <!-- Impressum Text wird aus content.txt geladen -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load content from content.txt
+        async function loadContent() {
+            try {
+                const response = await fetch('content.txt');
+                const text = await response.text();
+                const content = parseContent(text);
+                
+                // Load About Text
+                document.getElementById('about-text').textContent = content.about;
+                
+                // Load Gallery
+                const galleryWrapper = document.getElementById('galleryWrapper');
+                const galleryDots = document.getElementById('galleryDots');
+                content.gallery.forEach((image, index) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'gallery-slide';
+                    slide.innerHTML = `<img src="${image}" alt="Auftritt ${index + 1}">`;
+                    galleryWrapper.appendChild(slide);
+                    
+                    const dot = document.createElement('span');
+                    dot.className = 'dot' + (index === 0 ? ' active' : '');
+                    dot.onclick = () => goToSlide(index);
+                    galleryDots.appendChild(dot);
+                });
+                
+                // Load Musicians
+                const musiciansContainer = document.getElementById('musicians-container');
+                content.musicians.forEach(musician => {
+                    const musicianDiv = document.createElement('div');
+                    musicianDiv.className = 'musician';
+                    musicianDiv.innerHTML = `
+                        <div class="musician-image">
+                            <img src="${musician.image}" alt="${musician.name}">
+                        </div>
+                        <div class="musician-info">
+                            <h3>${musician.name}</h3>
+                            <div class="instrument">${musician.instrument}</div>
+                            <p>${musician.bio}</p>
+                        </div>
+                    `;
+                    musiciansContainer.appendChild(musicianDiv);
+                });
+                
+                // Load FAQ
+                const faqContainer = document.getElementById('faq-container');
+                content.faq.forEach(item => {
+                    const faqDiv = document.createElement('div');
+                    faqDiv.className = 'faq-item';
+                    faqDiv.innerHTML = `
+                        <button class="faq-question">${item.question}</button>
+                        <div class="faq-answer">
+                            <p>${item.answer}</p>
+                        </div>
+                    `;
+                    faqContainer.appendChild(faqDiv);
+                });
+                
+                // Load Contact
+                document.getElementById('instagram-link').href = content.contact.instagram;
+                document.getElementById('whatsapp-link').href = `https://wa.me/${content.contact.whatsapp}`;
+                document.getElementById('email-link').href = `mailto:${content.contact.email}`;
+                
+                // Load Impressum
+                document.getElementById('impressum-text').innerHTML = content.impressum;
+                
+                // Initialize FAQ
+                initFAQ();
+                
+            } catch (error) {
+                console.error('Error loading content:', error);
+            }
+        }
+
+        function parseContent(text) {
+            const content = {
+                about: '',
+                gallery: [],
+                musicians: [],
+                faq: [],
+                contact: {},
+                impressum: ''
+            };
+            
+            const lines = text.split('\n');
+            let currentSection = '';
+            let currentMusician = null;
+            let currentFAQ = null;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line || line.startsWith('#')) return;
+                
+                if (line.startsWith('[') && line.endsWith(']')) {
+                    currentSection = line.slice(1, -1).toLowerCase();
+                    return;
+                }
+                
+                if (currentSection === 'about') {
+                    content.about += line + ' ';
+                } else if (currentSection === 'gallery') {
+                    if (line) content.gallery.push(line);
+                } else if (currentSection === 'musicians') {
+                    if (line.startsWith('name:')) {
+                        if (currentMusician) content.musicians.push(currentMusician);
+                        currentMusician = { name: line.substring(5).trim() };
+                    } else if (line.startsWith('instrument:')) {
+                        currentMusician.instrument = line.substring(11).trim();
+                    } else if (line.startsWith('image:')) {
+                        currentMusician.image = line.substring(6).trim();
+                    } else if (line.startsWith('bio:')) {
+                        currentMusician.bio = line.substring(4).trim();
+                    }
+                } else if (currentSection === 'faq') {
+                    if (line.startsWith('q:')) {
+                        if (currentFAQ) content.faq.push(currentFAQ);
+                        currentFAQ = { question: line.substring(2).trim() };
+                    } else if (line.startsWith('a:')) {
+                        currentFAQ.answer = line.substring(2).trim();
+                    }
+                } else if (currentSection === 'contact') {
+                    const [key, value] = line.split(':').map(s => s.trim());
+                    if (key && value) content.contact[key] = value;
+                } else if (currentSection === 'impressum') {
+                    content.impressum += line + '<br>';
+                }
+            });
+            
+            if (currentMusician) content.musicians.push(currentMusician);
+            if (currentFAQ) content.faq.push(currentFAQ);
+            
+            return content;
+        }
+
+        // Gallery functionality
+        let currentSlide = 0;
+
+        function changeSlide(direction) {
+            const slides = document.querySelectorAll('.gallery-slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = slides.length - 1;
+            if (currentSlide >= slides.length) currentSlide = 0;
+            
+            updateGallery();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateGallery();
+        }
+
+        function updateGallery() {
+            const wrapper = document.getElementById('galleryWrapper');
+            const dots = document.querySelectorAll('.dot');
+            
+            wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        // Auto-play gallery
+        setInterval(() => {
+            changeSlide(1);
+        }, 5000);
+
+        // FAQ functionality
+        function initFAQ() {
+            const questions = document.querySelectorAll('.faq-question');
+            questions.forEach(question => {
+                question.addEventListener('click', () => {
+                    const answer = question.nextElementSibling;
+                    const isActive = question.classList.contains('active');
+                    
+                    // Close all
+                    document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('active'));
+                    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+                    
+                    // Open clicked if it wasn't active
+                    if (!isActive) {
+                        question.classList.add('active');
+                        answer.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // Impressum overlay
+        function openImpressum() {
+            document.getElementById('impressumOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImpressum() {
+            document.getElementById('impressumOverlay').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe sections
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+            document.querySelectorAll('.musician').forEach(el => observer.observe(el));
+            
+            // Header scroll effect
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('header');
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+            
+            // Load content
+            loadContent();
+        });
+
+        // Close impressum on overlay click
+        document.getElementById('impressumOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'impressumOverlay') {
+                closeImpressum();
+            }
+        });
+    </script>
+</body>
+</html>
